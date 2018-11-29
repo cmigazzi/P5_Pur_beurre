@@ -1,0 +1,4 @@
+/P5_venv/
+__pycache__/
+*.py[cod]
+.vscode/
