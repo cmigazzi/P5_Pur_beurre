@@ -8,11 +8,11 @@ To do that, make sure that Python3, venv and MySql are installed and follow thes
 
 - clone the repo: `git clone https://github.com/cmigazzi/P5_Pur_beurre.git`
 
-- install and activate virtual environnement: `python3 -m venv eat_better_venv`
+- create virtual environnement (venv): `python3 -m venv eat_better_venv`
 
-    - for Linux and MacOS user: `source eat_better_venv\bin\activate`
+    - for Linux and MacOS user, activate venv: `source eat_better_venv\bin\activate`
     
-    - for Windows user: `eat_better_venv\Scripts\activate`
+    - for Windows user, activate venv: `eat_better_venv\Scripts\activate`
 
 - install required libs: `pip install -r requirements.txt`
 
