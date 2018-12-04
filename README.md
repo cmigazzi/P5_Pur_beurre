@@ -7,7 +7,7 @@ Before using the applictaion, you need to clone this repository, create and acti
 To do that, make sure that Python3, venv and MySql are installed and follow theses steps:
 
 - clone the repo:
-    git clone https://github.com/cmigazzi/P5_Pur_beurre.git
+    `git clone https://github.com/cmigazzi/P5_Pur_beurre.git`
 
 - install and activate virtual environnement:
     python3 -m venv eat_better_venv
