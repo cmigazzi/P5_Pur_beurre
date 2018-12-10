@@ -39,7 +39,7 @@ def create_database():
     TABLES["Store"] = f"""
         CREATE TABLE IF NOT EXISTS {DB_NAME}.`Store` (
             `id` SMALLINT NOT NULL AUTO_INCREMENT,
-            `name` VARCHAR(45) NULL,
+            `name` VARCHAR(255) NULL,
             PRIMARY KEY (`id`))
         ENGINE = InnoDB;
         """
@@ -47,7 +47,7 @@ def create_database():
     TABLES["Brand"] = f"""
         CREATE TABLE IF NOT EXISTS {DB_NAME}.`Brand` (
             `id` INT NOT NULL AUTO_INCREMENT,
-            `name` VARCHAR(45) NULL,
+            `name` VARCHAR(255) NULL,
             PRIMARY KEY (`id`))
         ENGINE = InnoDB;
         """
@@ -183,12 +183,22 @@ def save_products(products):
     
     cursor = db_connection.cursor()
 
-
+    name_errors = 0
+    query_errors = 0
+    data_errors = 0
+    print(f"Nombre de produits (avant l'enregistrement): {len(products)}")
     for product in products:
         try:
             product["nutrition_grade_fr"]
         except KeyError:
             product["nutrition_grade_fr"] = "n"
+
+        try:
+            product["product_name_fr"]
+        except KeyError:
+            name_errors += 1
+            continue
+
         # Get number of categories
         category_field = ", ".join(["category_"+str(id)
                                     for (id, name) in product["categories"]])
@@ -228,14 +238,17 @@ def save_products(products):
 
         try:
             cursor.execute(insertion_query)
-        except (KeyError, mysql.connector.errors.ProgrammingError) as e:
-            print(e)
-            # print(insertion_query)
-        except mysql.connector.errors.DataError as e:
-            print(e)
-#           print(insertion_query)
-            break
 
+        except (KeyError, mysql.connector.errors.ProgrammingError):
+            query_errors += 1
+            print("query", query_errors)
+            # print(insertion_query)
+        except mysql.connector.errors.DataError:
+            data_errors += 1
+            print("data", data_errors)
+            # print(insertion_query)
+            
+    print(name_errors)
     db_connection.commit()
     cursor.close()
     db_connection.close()

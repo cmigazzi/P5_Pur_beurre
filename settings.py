@@ -18,11 +18,11 @@ CATEGORIES = [
     "Plats préparés",
 #    "Biscuits et gâteaux",
 #    "Produits à tartiner",
-#    "Petit-déjeuners",
-#    "Desserts",
+    "Petit-déjeuners",
+    "Desserts",
 #    "Epicerie",
-#    "Surgelés",
-#    "Viandes"
+    "Surgelés",
+    "Viandes"
 ]
 
 SEARCH_API_URL = "https://fr.openfoodfacts.org/cgi/search.pl"
