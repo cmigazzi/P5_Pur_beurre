@@ -4,10 +4,34 @@
 ################################################################################
 
 import requests
+import mysql.connector
 
-from settings import CATEGORIES, SEARCH_API_URL, FIELD_NEEDED
-from sql_queries import create_database, save_data_API, save_products
+from settings import DB_USER, DB_PASSWORD, DB_HOST, CATEGORIES, SEARCH_API_URL, FIELD_NEEDED
+from models import Category, Brand, Product, Store
 
+def create_database():
+    """
+        This function creates the databse schema
+
+        !!! DON'T FORGET to configure                       !!!
+        !!! your username, password, host and database name !!!
+        !!! in settings.py module                           !!!
+    """
+    db_connection = mysql.connector.connect(user=DB_USER,
+                                            password=DB_PASSWORD,
+                                            host=DB_HOST)
+
+    cursor = db_connection.cursor()
+
+    f = open("database.sql", "r")
+    query = " ".join(f.readlines())
+    iterator = cursor.execute(query, multi=True)
+    for i in iterator:
+        i
+        
+    cursor.close()
+    f.close()
+    db_connection.close()
 
 def get_api_data(category):
     """This function requests the OpenFoodFact API to get data
@@ -54,10 +78,10 @@ def save_data():
 
             filter_categories = categories[category_index:category_index+3]
             product["categories"] = [
-                category for category in enumerate(filter_categories)]
+                category for category in filter_categories]
 
             filter_stores = stores[:2]
-            product["stores"] = [store for store in enumerate(filter_stores)]
+            product["stores"] = [store for store in filter_stores]
 
             product["brands"] = brands[0]
 
@@ -71,10 +95,12 @@ def save_data():
     clean_brands = clean_duplicate(all_brands)
     clean_stores = clean_duplicate(all_stores)
 
-    save_data_API(clean_categories, clean_brands, clean_stores)
-    save_products(products)
+    Category().insert_query(clean_categories)
+    Brand().insert_query(clean_brands)
+    Store().insert_query(clean_stores)
+    Product().insert_query(products)
     
-
+    
 
 def clean_tag(elmt_with_commas):
     """This function transforms a string of elements separated by commas into a list 
