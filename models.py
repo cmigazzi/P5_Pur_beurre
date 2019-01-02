@@ -7,7 +7,7 @@ import settings
 #     def create(self):
 #         db = records.Database(
 #             f"mysql+mysqlconnector://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}")
-        
+
 #         db.query_file('database.sql', fetchall=True)
 
 
@@ -85,12 +85,73 @@ class Product(Table):
                 f"INSERT INTO {self.name} ({columns}) VALUES ({values});", **product)
         print(err)
 
+    def select_product_list_by_category(self, category_id):
+
+        query = (f"SELECT {self.name}.`name` AS `name`, brand.`name` AS brand "
+                 f"FROM eat_better.{self.name} "
+                 "INNER JOIN eat_better.category "
+                 f"ON {self.name}.category_2 = category.id "
+                 "INNER JOIN eat_better.brand "
+                 f"ON {self.name}.brand = brand.id "
+                 f"WHERE {self.name}.category_2 = {category_id} "
+                 "AND category.`name` NOT LIKE 'en:%' OR 'fr:%';")
+        print(query)
+        rows = self.db.query(query)
+
+        results = [(r.name, r.brand) for r in rows]
+
+        return results
+
 
 class Category(Table):
     def __init__(self):
         Table.__init__(self)
         self.name = "Category"
         self.columns = "name"
+
+    def select_five_main_categories(self):
+
+        query = (f"SELECT DISTINCT {self.name}.`name` "
+                 "FROM eat_better.product "
+                 f"INNER JOIN eat_better.{self.name} "
+                 f"ON product.category_0 = {self.name}.id "
+                 f"WHERE {self.name}.`name` NOT LIKE 'en:%' OR 'fr:%' "
+                 f"GROUP BY {self.name}.`name` "
+                 "ORDER BY count(*) DESC "
+                 "LIMIT 5;")
+        print(query)
+        rows = self.db.query(query)
+
+        results = [r.name for r in rows]
+
+        return results
+
+    def select_sub_categories(self, category_selected, nb_sub_menu):
+
+        if nb_sub_menu == 1:
+            category_field = "category_1"
+            parent_category = "category_0"
+        elif nb_sub_menu == 2:
+            category_field = "category_2"
+            parent_category = "category_1"
+
+        category_id = self.select_id_by_name(category_selected)
+
+        query = ("SELECT DISTINCT category.`name`, category.id "
+                 "FROM eat_better.product "
+                 "INNER JOIN eat_better.category "
+                 f"ON product.{category_field} = category.id "
+                 f"WHERE product.{parent_category}= {category_id} "
+                 "AND category.`name` NOT LIKE 'en:%' OR 'fr:%' "
+                 "GROUP BY category.`name` "
+                 "ORDER BY count(*) DESC "
+                 "LIMIT 20;")
+        print(query)
+        rows = self.db.query(query)
+
+        results = [r.name for r in rows]
+
+        return results
 
 
 class Brand(Table):
@@ -108,11 +169,5 @@ class Store(Table):
 
 
 if __name__ == "__main__":
-    # cat_data = ['poissons', 'viandes', 'frites']
-    products = [{'stores': ['Intermarché', 'Leader Price'], 'generic_name': 'Crème glacée Caramel, sauce caramel (9%) et des Pépites aux amandes (9%)', 'url': 'https://fr.openfoodfacts.org/produit/8718114712277/ben-jerry-s-fairly-nuts', 'brands': "Ben & Jerry's", 'nutrition_grade_fr':
-                 'd', 'product_name_fr': "Ben & Jerry's - Fairly Nuts", 'categories': ['Desserts', ' Surgelés']}, {'url': 'https://fr.openfoodfacts.org/produit/3013520080398/sorbet-framboise-plein-fruit-carte-d-or', 'generic_name': 'sorbet plein fruit framboise avec des morceaux de framboise (1,4%)', 'stores': ['Carrefour', 'Super U'], 'product_name_fr': 'Sorbet framboise plein fruit', 'categories': ['Desserts', ' Surgelés', ' Desserts glacés'], 'brands': "Carte d'or", 'nutrition_grade_fr': 'c'}]
-    # Category().insert_query(cat_data)
-    # Brand().insert_query(cat_data)
-    # Store().insert_query(cat_data)
-    p = Product().insert_query(products)
-    print(p)
+    c = Product().select_product_list_by_category(23)
+    print(c)

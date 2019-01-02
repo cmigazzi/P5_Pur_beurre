@@ -17,11 +17,11 @@ DB_NAME = "eat_better"
 CATEGORIES = [
 #    "Snacks sucrés",
 #    "Produits laitiers",
-#    "Plats préparés",
+    "Plats préparés",
 #    "Biscuits et gâteaux",
 #    "Produits à tartiner",
 #    "Petit-déjeuners",
-#    "Desserts",
+    "Desserts",
 #    "Epicerie",
     "Surgelés",
 #    "Viandes"

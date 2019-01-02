@@ -112,6 +112,7 @@ def clean_tag(elmt_with_commas):
         [list] -- elements in a list
     """
     elmt_list = elmt_with_commas.split(",")
+    elmt_list = [e.strip() for e in elmt_list]
     return elmt_list
 
 
