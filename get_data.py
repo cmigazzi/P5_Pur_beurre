@@ -42,7 +42,7 @@ def get_api_data(category):
     products = []
 
     url = SEARCH_API_URL + \
-        f"?search_terms={category}&search_tag=category&page_size=250&json=1"
+        f"?search_terms={category}&search_tag=category&sort_by=unique_scans_n&page_size=500&json=1"
     json_response = requests.get(url).json()
     products_list = json_response["products"]
 
@@ -61,9 +61,10 @@ def save_data():
     all_categories = []
     all_stores = []
     all_brands = []
+    value_err = 0
 
     for category in CATEGORIES:
-        print(f"Loading products of {category}")
+        print(f"Chargement des produits de type {category}")
         products_in_category = get_api_data(category)
 
         for product in products_in_category:
@@ -74,7 +75,8 @@ def save_data():
             try:
                 category_index = categories.index(category)
             except ValueError:
-                category_index = 0
+                value_err += 1
+                continue
 
             filter_categories = categories[category_index:category_index+3]
             product["categories"] = [
@@ -90,6 +92,8 @@ def save_data():
             all_brands.append(product["brands"])
 
             products.append(product)
+    
+    #print(value_err)
 
     clean_categories = clean_duplicate(all_categories)
     clean_brands = clean_duplicate(all_brands)

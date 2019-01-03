@@ -22,10 +22,12 @@ class Display():
             self.options = options
         for (number, option) in enumerate(self.options):
             if isinstance(option, tuple):
-                print(f"{number} - '{option[0]}' de la marque '{option[1]}'")
+                print(f"{number+1} - '{option[0]}' de la marque '{option[1]}'")
             else:
                 print(f"{number+1} - {option}")
 
+        
+            
     def make_choice(self):
         make_choice = True
         while make_choice == True:
