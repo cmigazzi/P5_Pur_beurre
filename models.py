@@ -49,17 +49,17 @@ class Product(Table):
         Table.__init__(self)
         self.name = "Product"
         self.columns = ["name", "description", "url", "nutri_score",
-                        "category_0", "category_1", "category_2", "store_0", "store_1", "brand"]
+                        "category", "sub_category", "store_0", "store_1", "brand"]
 
     def insert_query(self, products):
         # t = self.db.transaction()
 
         # #error tracker
-        nutri_err = 0
-        product_name_err = 0
-        description_err = 0
+        errors = {"nutri_score": 0, "product_name_fr": 0,
+                  "description": 0, "generic_name": 0}
         print("Enregistrement des produits dans la base de données:")
         for product in products:
+            #Counter
             if product == products[-1]:
                 print(products.index(product)+1, "/", len(products))
             else:
@@ -68,17 +68,23 @@ class Product(Table):
             try:
                 product["name"] = product.pop("product_name_fr")
             except KeyError:
-                product_name_err += 1
+                errors["product_name_fr"] += 1
                 # print(product)
                 continue
-            product["description"] = product.pop("generic_name")
+            try:
+                product["description"] = product.pop("generic_name")
+            except KeyError:
+                errors["generic_name"] += 1
+                continue
+
             try:
                 product["nutri_score"] = product.pop("nutrition_grade_fr")
             except KeyError:
-                nutri_err += 1
+                errors["nutri_score"] += 1
                 continue
+
             if len(product["description"]) > 255:
-                description_err += 1
+                errors["description"] += 1
                 continue
 
             product["brand"] = Brand().select_id_by_name(product.pop("brands"))
@@ -90,9 +96,8 @@ class Product(Table):
                          for i in product["stores"]]
             del product["stores"]
 
-            for n in range(len(categories_id)):
-                field_name = "category_" + str(n)
-                product[field_name] = categories_id[n]
+            product["category"] = categories_id[0]
+            product["sub_category"] = categories_id[1]
 
             for n in range(len(stores_id)):
                 field_name = "store_" + str(n)
@@ -103,20 +108,21 @@ class Product(Table):
 
             self.db.query(
                 f"INSERT INTO {self.name} ({columns}) VALUES ({values});", **product)
-        #print("nutri", nutri_err, "product", product_name_err, "description", description_err, sep="\n")
+        print(errors)
 
         self.db.close()
 
     def select_product_list_by_category(self, categories_selected):
 
-        query = (f"SELECT DISTINCT {self.name}.`name` AS `name`, brand.`name` AS brand "
+        query = (f"SELECT DISTINCT {self.name}.`name` AS `name`, b.`name` AS brand "
                  f"FROM eat_better.{self.name} "
-                 "INNER JOIN eat_better.category "
-                 f"ON {self.name}.category_2 = category.id "
-                 "INNER JOIN eat_better.brand "
-                 f"ON {self.name}.brand = brand.id "
-                 f"WHERE {self.name}.category_0 = {categories_selected['category_0']} AND {self.name}.category_1 = {categories_selected['category_1']} AND {self.name}.category_2 = {categories_selected['category_2']} "
-                 "AND category.`name` NOT LIKE 'en:%' OR 'fr:%';")
+                 "INNER JOIN eat_better.category AS c "
+                 f"ON {self.name}.sub_category = c.id "
+                 "INNER JOIN eat_better.brand AS b "
+                 f"ON {self.name}.brand = b.id "
+                 f"WHERE {self.name}.category = {categories_selected['category']} "
+                 f"AND {self.name}.sub_category = {categories_selected['sub_category']} "
+                 "AND c.`name` NOT LIKE 'en:%' OR 'fr:%';")
         print(query)
         rows = self.db.query(query)
 
@@ -136,7 +142,7 @@ class Category(Table):
         query = (f"SELECT DISTINCT {self.name}.`name` "
                  "FROM eat_better.product "
                  f"INNER JOIN eat_better.{self.name} "
-                 f"ON product.category_0 = {self.name}.id "
+                 f"ON product.category = {self.name}.id "
                  f"WHERE {self.name}.`name` NOT LIKE 'en:%' OR 'fr:%' "
                  f"GROUP BY {self.name}.`name` "
                  "ORDER BY count(*) DESC "
@@ -148,20 +154,13 @@ class Category(Table):
 
         return results
 
-    def select_sub_categories(self, categories_selected, nb_sub_menu):
-
-        if nb_sub_menu == 1:
-            category_field = "category_1"
-            where_clause = f"WHERE product.category_0={categories_selected['category_0']}"
-        elif nb_sub_menu == 2:
-            category_field = "category_2"
-            where_clause = f"WHERE product.category_0= {categories_selected['category_0']} AND product.category_1 = {categories_selected['category_1']}"
+    def select_sub_categories(self, categories_selected):
 
         query = ("SELECT DISTINCT category.`name`, category.id "
                  "FROM eat_better.product "
                  "INNER JOIN eat_better.category "
-                 f"ON product.{category_field} = category.id "
-                 f"{where_clause} "
+                 f"ON product.sub_category = category.id "
+                 f"WHERE product.category={categories_selected['category']} "
                  "AND category.`name` NOT LIKE 'en:%' OR 'fr:%' "
                  "GROUP BY category.`name` "
                  "ORDER BY count(*) DESC "

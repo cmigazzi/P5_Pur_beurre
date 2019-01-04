@@ -15,16 +15,13 @@ DB_NAME = "eat_better"
 #           API REQUEST CONFIG
 # Choose your categories, maximum 5
 CATEGORIES = [
-#    "Snacks sucrés",
-#    "Produits laitiers",
-    "Plats préparés",
+#    "Céréales et pommes de terre",
+#    "Fromages",
 #    "Biscuits et gâteaux",
-#    "Produits à tartiner",
+#    "Produits à tartiner sucrés",
 #    "Petit-déjeuners",
     "Desserts",
-#    "Epicerie",
-    "Surgelés",
-#    "Viandes"
+    "Conserves"
 ]
 
 SEARCH_API_URL = "https://fr.openfoodfacts.org/cgi/search.pl"

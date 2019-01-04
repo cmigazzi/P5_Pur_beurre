@@ -29,32 +29,25 @@ CREATE TABLE IF NOT EXISTS `eat_better`.`Product` (
   `description` TINYTEXT NULL,
   `url` VARCHAR(255) NOT NULL,
   `nutri_score` VARCHAR(1) NULL,
-  `category_0` SMALLINT NOT NULL,
-  `category_1` SMALLINT NULL,
-  `category_2` SMALLINT NULL,
+  `category` SMALLINT NOT NULL,
+  `sub_category` SMALLINT NULL,
   `store_0` SMALLINT NOT NULL,
   `store_1` SMALLINT NULL,
   `brand` INT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE,
-  INDEX `fk_category_1_idx` (`category_0` ASC) VISIBLE,
-  INDEX `fk_category_1_idx1` (`category_1` ASC) VISIBLE,
-  INDEX `fk_category_2_idx` (`category_2` ASC) VISIBLE,
+  INDEX `fk_category_idx` (`category` ASC) VISIBLE,
+  INDEX `fk_sub_category_idx1` (`sub_category` ASC) VISIBLE,
   INDEX `fk_store_0_idx` (`store_0` ASC) VISIBLE,
   INDEX `fk_store_1_idx` (`store_1` ASC) VISIBLE,
   INDEX `fk_brand_idx` (`brand` ASC) VISIBLE,
-  CONSTRAINT `fk_category_0`
-    FOREIGN KEY (`category_0`)
+  CONSTRAINT `fk_category`
+    FOREIGN KEY (`category`)
     REFERENCES `eat_better`.`Category` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_category_1`
-    FOREIGN KEY (`category_1`)
-    REFERENCES `eat_better`.`Category` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_category_2`
-    FOREIGN KEY (`category_2`)
+  CONSTRAINT `fk_sub_category`
+    FOREIGN KEY (`sub_category`)
     REFERENCES `eat_better`.`Category` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,

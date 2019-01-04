@@ -15,26 +15,48 @@ class Display():
             "Quel aliment souhaitez-vous remplacer ?", "Retrouver mes aliments substitués.", "Quitter"]
         self. options = None
 
-    def template_menu(self, options):
+    def template_menu(self, options, sub_menu):
         if options == None:
             self.options = self.main_menu_options
         else:
             self.options = options
+
+        if sub_menu == 0:
+            # main menu
+            print("Faites votre choix à l'aide des numéros")
+        elif sub_menu == 1:
+            # select category
+            print("\nSélectionner la catégorie (taper 0 pour revenir au menu principal):")
+        elif sub_menu == 2:
+            # select sub category
+            print(
+                "\nSélectionner la sous-catégorie (taper 0 pour revenir à la liste des catégories):")
+        elif sub_menu == 3:
+            # select product
+            print(
+                "\nSélectionner l'aliment (taper 0 pour revenir à la liste des sous-catégories):")
+
         for (number, option) in enumerate(self.options):
             if isinstance(option, tuple):
                 print(f"{number+1} - '{option[0]}' de la marque '{option[1]}'")
             else:
                 print(f"{number+1} - {option}")
+        if sub_menu != 0:
+            print("0 - Retour")
 
-        
-            
-    def make_choice(self):
+    def make_choice(self, sub_menu):
         make_choice = True
         while make_choice == True:
+
             try:
-                choice = int(
-                    input("Faites votre choix à l'aide des numéros:\n"))
+                choice = int(input("Saisissez un numéro: \n"))
             except ValueError:
                 print("Pour faire votre choix, veuillez saisir un nombre valide")
                 continue
             return choice
+
+    def choice_validator(self, choice):
+        pass
+
+    def navigation_tree(self):
+        pass

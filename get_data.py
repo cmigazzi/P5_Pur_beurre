@@ -78,7 +78,7 @@ def save_data():
                 value_err += 1
                 continue
 
-            filter_categories = categories[category_index:category_index+3]
+            filter_categories = categories[category_index:category_index+2]
             product["categories"] = [
                 category for category in filter_categories]
 
