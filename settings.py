@@ -17,9 +17,9 @@ DB_NAME = "eat_better"
 CATEGORIES = [
 #    "Céréales et pommes de terre",
 #    "Fromages",
-#    "Biscuits et gâteaux",
-#    "Produits à tartiner sucrés",
-#    "Petit-déjeuners",
+    "Biscuits et gâteaux",
+    "Produits à tartiner sucrés",
+    "Petit-déjeuners",
     "Desserts",
     "Conserves"
 ]

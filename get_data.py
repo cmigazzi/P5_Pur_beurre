@@ -42,7 +42,7 @@ def get_api_data(category):
     products = []
 
     url = SEARCH_API_URL + \
-        f"?search_terms={category}&search_tag=category&sort_by=unique_scans_n&page_size=500&json=1"
+        f"?search_terms={category}&search_tag=category&sort_by=unique_scans_n&page_size=1000&json=1"
     json_response = requests.get(url).json()
     products_list = json_response["products"]
 
@@ -68,10 +68,22 @@ def save_data():
         products_in_category = get_api_data(category)
 
         for product in products_in_category:
-            categories = clean_tag(product["categories"])
-            stores = clean_tag(product["stores"])
-            brands = clean_tag(product["brands"])
+            try:
+                categories = clean_tag(product["categories"], 100)
+            except KeyError:
+                value_err += 1
+                continue
+            try:
+                stores = clean_tag(product["stores"], 45)
+            except KeyError:
+                value_err += 1
+                continue
 
+            try:
+                brands = clean_tag(product["brands"], 45)
+            except KeyError:
+                value_err += 1
+                continue
             try:
                 category_index = categories.index(category)
             except ValueError:
@@ -93,7 +105,7 @@ def save_data():
 
             products.append(product)
     
-    #print(value_err)
+    print("Nombre d'erreurs durant les chargtement:", value_err)
 
     clean_categories = clean_duplicate(all_categories)
     clean_brands = clean_duplicate(all_brands)
@@ -106,7 +118,7 @@ def save_data():
     
     
 
-def clean_tag(elmt_with_commas):
+def clean_tag(elmt_with_commas, max_lenght):
     """This function transforms a string of elements separated by commas into a list 
 
     Arguments:
@@ -116,7 +128,7 @@ def clean_tag(elmt_with_commas):
         [list] -- elements in a list
     """
     elmt_list = elmt_with_commas.split(",")
-    elmt_list = [e.strip() for e in elmt_list]
+    elmt_list = [e.strip() for e in elmt_list if len(e) < max_lenght]
     return elmt_list
 
 

@@ -54,9 +54,3 @@ class Display():
                 print("Pour faire votre choix, veuillez saisir un nombre valide")
                 continue
             return choice
-
-    def choice_validator(self, choice):
-        pass
-
-    def navigation_tree(self):
-        pass

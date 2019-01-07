@@ -30,6 +30,8 @@ class Table():
         t = self.db.transaction()
 
         for unique_data in data:
+            # if len(unique_data) > 100:
+
             self.db.query(
                 f"INSERT INTO {self.name} ({self.columns}) VALUES (:unique_data);", unique_data=unique_data)
         t.commit()
@@ -51,53 +53,69 @@ class Product(Table):
         self.columns = ["name", "description", "url", "nutri_score",
                         "category", "sub_category", "store_0", "store_1", "brand"]
 
+    @staticmethod
+    def product_validator(product):
+
+        valid_product = True
+        # Check KeyError
+        try:
+            product["product_name_fr"]
+            product["generic_name"]
+            product["url"]
+            product["categories"]
+            product["brands"]
+            product["stores"]
+            product["nutrition_grade_fr"]
+        except KeyError:
+            valid_product = False
+
+        # Check empty field and lenght of generic_name
+        for key, value in product.items():
+            if value == '':
+                valid_product = False
+                break
+            if key == "generic_name":
+                if len(value) > 255:
+                    valid_product = False
+        return valid_product
+
     def insert_query(self, products):
-        # t = self.db.transaction()
+        t = self.db.transaction()
 
         # #error tracker
-        errors = {"nutri_score": 0, "product_name_fr": 0,
-                  "description": 0, "generic_name": 0}
         print("Enregistrement des produits dans la base de données:")
+        errors = 0
         for product in products:
-            #Counter
+            # Counter
             if product == products[-1]:
                 print(products.index(product)+1, "/", len(products))
             else:
                 print(products.index(product)+1, "/", len(products), end="\r")
 
-            try:
-                product["name"] = product.pop("product_name_fr")
-            except KeyError:
-                errors["product_name_fr"] += 1
-                # print(product)
-                continue
-            try:
-                product["description"] = product.pop("generic_name")
-            except KeyError:
-                errors["generic_name"] += 1
+            if Product().product_validator(product) == False:
+                errors += 1
+                print("erreurs: ", errors)
                 continue
 
-            try:
-                product["nutri_score"] = product.pop("nutrition_grade_fr")
-            except KeyError:
-                errors["nutri_score"] += 1
-                continue
-
-            if len(product["description"]) > 255:
-                errors["description"] += 1
-                continue
+            product["name"] = product.pop("product_name_fr")
+            product["description"] = product.pop("generic_name")
+            product["nutri_score"] = product.pop("nutrition_grade_fr")
 
             product["brand"] = Brand().select_id_by_name(product.pop("brands"))
 
             categories_id = [Category().select_id_by_name(i)
                              for i in product["categories"]]
             del product["categories"]
+
             stores_id = [Store().select_id_by_name(i)
                          for i in product["stores"]]
             del product["stores"]
 
             product["category"] = categories_id[0]
-            product["sub_category"] = categories_id[1]
+            try:
+                product["sub_category"] = categories_id[1]
+            except IndexError:
+                product["sub_category"] = None
 
             for n in range(len(stores_id)):
                 field_name = "store_" + str(n)
@@ -109,7 +127,7 @@ class Product(Table):
             self.db.query(
                 f"INSERT INTO {self.name} ({columns}) VALUES ({values});", **product)
         print(errors)
-
+        t.commit()
         self.db.close()
 
     def select_product_list_by_category(self, categories_selected):
@@ -120,9 +138,10 @@ class Product(Table):
                  f"ON {self.name}.sub_category = c.id "
                  "INNER JOIN eat_better.brand AS b "
                  f"ON {self.name}.brand = b.id "
-                 f"WHERE {self.name}.category = {categories_selected['category']} "
+                 f"AND {self.name}.category = {categories_selected['category']} "
                  f"AND {self.name}.sub_category = {categories_selected['sub_category']} "
-                 "AND c.`name` NOT LIKE 'en:%' OR 'fr:%';")
+                 "AND c.`name` NOT LIKE 'en:%' OR 'fr:%';"
+                 )
         print(query)
         rows = self.db.query(query)
 
@@ -163,6 +182,7 @@ class Category(Table):
                  f"WHERE product.category={categories_selected['category']} "
                  "AND category.`name` NOT LIKE 'en:%' OR 'fr:%' "
                  "GROUP BY category.`name` "
+                 "HAVING COUNT(*) >= 5 "
                  "ORDER BY count(*) DESC "
                  "LIMIT 20;")
         # print(query)
