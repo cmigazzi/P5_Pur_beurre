@@ -23,7 +23,7 @@ CATEGORIES=[
     "Biscuits et gâteaux",
 #    "Produits à tartiner sucrés",
     "Petit-déjeuners",
-#    "Desserts",
+    "Desserts",
 #    "Conserves"
 ]
 

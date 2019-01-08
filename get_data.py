@@ -5,9 +5,11 @@
 
 import requests
 import mysql.connector
+import records
 
-from settings import DB_USER, DB_PASSWORD, DB_HOST, CATEGORIES, SEARCH_API_URL, FIELD_NEEDED
+from settings import DB_USER, DB_PASSWORD, DB_HOST, CATEGORIES, SEARCH_API_URL, FIELD_NEEDED, DB_CONNEXION
 from models import Category, Brand, Product, Store
+
 
 def create_database():
     """
@@ -28,10 +30,11 @@ def create_database():
     iterator = cursor.execute(query, multi=True)
     for i in iterator:
         i
-        
+
     cursor.close()
     f.close()
     db_connection.close()
+
 
 def get_api_data(category):
     """This function requests the OpenFoodFact API to get data
@@ -42,7 +45,7 @@ def get_api_data(category):
     products = []
 
     url = SEARCH_API_URL + \
-        f"?search_terms={category}&search_tag=category&sort_by=unique_scans_n&page_size=1000&json=1"
+        f"?search_terms={category}&search_tag=category&sort_by=unique_scans_n&page_size=250&json=1"
     json_response = requests.get(url).json()
     products_list = json_response["products"]
 
@@ -61,25 +64,30 @@ def save_data():
     all_categories = []
     all_stores = []
     all_brands = []
-    value_err = 0
+    errors = 0
 
     for category in CATEGORIES:
         print(f"Chargement des produits de type {category}")
         products_in_category = get_api_data(category)
 
         for product in products_in_category:
-            try:
-                categories = clean_tag(product["categories"], 100)
-                stores = clean_tag(product["stores"], 45)
-                brands = clean_tag(product["brands"], 45)
-                category_index = categories.index(category)
-            except KeyError:
-                value_err += 1
+
+            if product_validator(product) == False:
+                errors += 1
                 continue
-                
-            except ValueError:
-                value_err += 1
-                continue
+            else:
+
+                try:
+                    categories = clean_tag(product["categories"], 100)
+                    stores = clean_tag(product["stores"], 45)
+                    brands = clean_tag(product["brands"], 45)
+                    category_index = categories.index(category)
+                except KeyError:
+                    errors += 1
+                    continue
+                except ValueError:
+                    errors += 1
+                    continue
 
             filter_categories = categories[category_index:category_index+2]
             product["categories"] = [
@@ -95,19 +103,45 @@ def save_data():
             all_brands.append(product["brands"])
 
             products.append(product)
-    
-    print("Nombre d'erreurs durant les chargtement:", value_err)
+
+    print(f"{errors} éléments n'ont pas pu être importés car ils sont incomplets.")
 
     clean_categories = clean_duplicate(all_categories)
     clean_brands = clean_duplicate(all_brands)
     clean_stores = clean_duplicate(all_stores)
 
-    Category().insert_query(clean_categories)
-    Brand().insert_query(clean_brands)
-    Store().insert_query(clean_stores)
-    Product().insert_query(products)
-    
-    
+    db_connection = records.Database(DB_CONNEXION)
+
+    Category(db_connection).insert_query(clean_categories)
+    Brand(db_connection).insert_query(clean_brands)
+    Store(db_connection).insert_query(clean_stores)
+    Product(db_connection).insert_query(products)
+
+    db_connection.close()
+
+
+def product_validator(product):
+
+    valid_product = True
+    # Check KeyError
+    try:
+        product["product_name_fr"]
+        product["generic_name"]
+        product["url"]
+        product["nutrition_grade_fr"]
+    except KeyError:
+        valid_product = False
+
+    # Check empty field and lenght of generic_name
+    for key, value in product.items():
+        if value == '':
+            valid_product = False
+            break
+        if key == "generic_name":
+            if len(value) > 255:
+                valid_product = False
+    return valid_product
+
 
 def clean_tag(elmt_with_commas, max_lenght):
     """This function transforms a string of elements separated by commas into a list 
@@ -134,6 +168,8 @@ def clean_duplicate(list_of_tags):
     """
     clean_list = list(set(list_of_tags))
     return clean_list
+
+
 
 if __name__ == "__main__":
     save_data()

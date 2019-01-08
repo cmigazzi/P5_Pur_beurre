@@ -35,7 +35,6 @@ class Table():
                 f"INSERT INTO {self.name} ({self.columns}) VALUES (:unique_data);", unique_data=unique_data)
         t.commit()
 
-        self.db.close()
 
     def select_id_by_name(self, name):
         rows = self.db.query(
@@ -52,38 +51,10 @@ class Product(Table):
         self.columns = ["name", "description", "url", "nutri_score",
                         "category", "sub_category", "store_0", "store_1", "brand"]
 
-    @staticmethod
-    def product_validator(product):
-
-        valid_product = True
-        # Check KeyError
-        try:
-            product["product_name_fr"]
-            product["generic_name"]
-            product["url"]
-            product["categories"]
-            product["brands"]
-            product["stores"]
-            product["nutrition_grade_fr"]
-        except KeyError:
-            valid_product = False
-
-        # Check empty field and lenght of generic_name
-        for key, value in product.items():
-            if value == '':
-                valid_product = False
-                break
-            if key == "generic_name":
-                if len(value) > 255:
-                    valid_product = False
-        return valid_product
-
     def insert_query(self, products):
         t = self.db.transaction()
 
-        # #error tracker
         print("Enregistrement des produits dans la base de données:")
-        errors = 0
         for product in products:
             # Counter
             if product == products[-1]:
@@ -91,10 +62,6 @@ class Product(Table):
             else:
                 print(products.index(product)+1, "/", len(products), end="\r")
 
-            if Product(self.db).product_validator(product) == False:
-                errors += 1
-                print("erreurs: ", errors)
-                continue
 
             product["name"] = product.pop("product_name_fr")
             product["description"] = product.pop("generic_name")
@@ -126,7 +93,7 @@ class Product(Table):
 
             self.db.query(
                 f"INSERT INTO {self.name} ({columns}) VALUES ({values});", **product)
-        print(errors)
+
         t.commit()
         self.db.close()
 
