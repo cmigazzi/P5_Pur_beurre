@@ -14,23 +14,23 @@ class Display():
         self.main_menu_options = [
             "Quel aliment souhaitez-vous remplacer ?", "Retrouver mes aliments substitués.", "Quitter"]
 
-    def template_menu(self, sub_menu, options=None):
+    def template_menu(self, menu_tree, options=None):
         if options == None:
             self.options = self.main_menu_options
         else:
             self.options = options
 
-        if sub_menu == 0:
+        if menu_tree == 0:
             # main menu
             print("Faites votre choix à l'aide des numéros")
-        elif sub_menu == 1:
+        elif menu_tree == 1:
             # select category
             print("\nSélectionner la catégorie (taper 0 pour revenir au menu principal):")
-        elif sub_menu == 2:
+        elif menu_tree == 2:
             # select sub category
             print(
                 "\nSélectionner la sous-catégorie (taper 0 pour revenir à la liste des catégories):")
-        elif sub_menu == 3:
+        elif menu_tree == 3:
             # select product
             print(
                 "\nSélectionner l'aliment (taper 0 pour revenir à la liste des sous-catégories):")
@@ -40,10 +40,20 @@ class Display():
                 print(f"{number+1} - '{option[0]}' de la marque '{option[1]}'")
             else:
                 print(f"{number+1} - {option}")
-        if sub_menu != 0:
+        if menu_tree != 0:
             print("0 - Retour")
 
-    def make_choice(self, sub_menu):
+    def substitute_proposition(self, selections, substitute):
+
+        print(f"Nous vous proposons de remplacer le produit {selections['name']} de la marque {selections['brand']} par: ",
+              f"{ substitute.name } de la marque { substitute.brand}. ",
+              f"Description: {substitute.description}",
+              f"Vous pourrez le trouver chez {substitute.store_0} ou {substitute.store_1}.",
+              "Pour plus d'informations sur le produit, cliquez ici:",
+              f"{substitute.url}",
+              sep="\n")
+
+    def make_choice(self, menu_tree):
         make_choice = True
         while make_choice == True:
 

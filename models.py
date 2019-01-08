@@ -100,7 +100,8 @@ class Product(Table):
             product["description"] = product.pop("generic_name")
             product["nutri_score"] = product.pop("nutrition_grade_fr")
 
-            product["brand"] = Brand(self.db).select_id_by_name(product.pop("brands"))
+            product["brand"] = Brand(self.db).select_id_by_name(
+                product.pop("brands"))
 
             categories_id = [Category(self.db).select_id_by_name(i)
                              for i in product["categories"]]
@@ -129,7 +130,7 @@ class Product(Table):
         t.commit()
         self.db.close()
 
-    def select_product_list_by_category(self, categories_selected):
+    def select_product_list_by_category(self, selections):
 
         query = (f"SELECT DISTINCT {self.name}.`name` AS `name`, b.`name` AS brand "
                  f"FROM eat_better.{self.name} "
@@ -137,8 +138,8 @@ class Product(Table):
                  f"ON {self.name}.sub_category = c.id "
                  "INNER JOIN eat_better.brand AS b "
                  f"ON {self.name}.brand = b.id "
-                 f"AND {self.name}.category = {categories_selected['category']} "
-                 f"AND {self.name}.sub_category = {categories_selected['sub_category']} "
+                 f"AND {self.name}.category = {selections['category']} "
+                 f"AND {self.name}.sub_category = {selections['sub_category']} "
                  "AND c.`name` NOT LIKE 'en:%' OR 'fr:%';"
                  )
         print(query)
@@ -148,51 +149,38 @@ class Product(Table):
 
         return results
 
-    def get_nutri_score_by_name(self, name_and_brand):
+    def get_nutri_score_by_name(self, selections):
 
-        field_query = {"name": name_and_brand[0], "brand": name_and_brand[1]}
-
-        brand_id = Brand(self.db).select_id_by_name(field_query["brand"])
-
-        field_query["brand"] = brand_id
-
-        query = ("SELECT DISTINCT name, brand, nutri_score " 
+        query = ("SELECT DISTINCT nutri_score "
                  "FROM eat_better.product "
                  "WHERE `name`=:name AND brand=:brand;")
-        
-        rows = self.db.query(query, **field_query)
 
-        return rows[0]
+        rows = self.db.query(query, **selections)
 
-    def select_product_by_name_and_brand(self, name_and_brand):
+        return rows[0].nutri_score
 
-        field_query = {"name": name_and_brand[0], "brand": name_and_brand[1]}
-
-        brand_id = Brand(self.db).select_id_by_name(field_query["brand"])
-
-        field_query["brand"] = brand_id
-
-        query = ("SELECT DISTINCT * FROM eat_better.product " 
-                 "WHERE name=:name and brand=:brand;")
-
-        rows = self.db.query(query, **field_query)
-
-        return rows[0]
-
-    def get_better_products(self, nutri_score):
+    def get_better_products(self, selections):
 
         all_nutri_scores = ['a', 'b', 'c', 'd', 'e']
-        nutri_score_wanted = tuple(n for n in all_nutri_scores if n < nutri_score)
+        nutri_score_wanted = tuple(
+            n for n in all_nutri_scores if n < selections["nutri_score"])
 
-        
-        query = ("SELECT DISTINCT name, description, brand, store_0, store_1, url "
+        query = ("SELECT DISTINCT product.name AS name, description, b.name AS brand, s0.name AS store_0, s1.name AS store_1, url "
                  "FROM eat_better.product "
-                 f"WHERE nutri_score IN {nutri_score_wanted} " 
-                 "AND category=40 AND sub_category=74 "
+                 "INNER JOIN eat_better.brand AS b "
+                 "ON product.brand = b.id "
+                 "INNER JOIN eat_better.store AS s0 "
+                 "ON product.store_0 = s0.id "
+                 "INNER JOIN eat_better.store AS s1 "
+                 "ON product.store_1 = s1.id "
+                 f"WHERE nutri_score IN {nutri_score_wanted} "
+                 "AND category=:category AND sub_category=:sub_category "
                  "ORDER BY nutri_score "
                  "LIMIT 5;")
 
-        rows = self.db.query(query)
+        rows = self.db.query(query, **selections)
+
+        return rows.all()
 
 
 class Category(Table):
@@ -218,13 +206,13 @@ class Category(Table):
 
         return results
 
-    def select_sub_categories(self, categories_selected):
+    def select_sub_categories(self, selections):
 
         query = ("SELECT DISTINCT category.`name`, category.id "
                  "FROM eat_better.product "
                  "INNER JOIN eat_better.category "
                  f"ON product.sub_category = category.id "
-                 f"WHERE product.category={categories_selected['category']} "
+                 f"WHERE product.category={selections['category']} "
                  "AND category.`name` NOT LIKE 'en:%' OR 'fr:%' "
                  "GROUP BY category.`name` "
                  "HAVING COUNT(*) >= 5 "
@@ -258,7 +246,7 @@ if __name__ == "__main__":
     # c = Category(settings.DB_CONNEXION).select_five_main_categories()
     print(settings.DB_CONNEXION)
     db_connexion = records.Database(settings.DB_CONNEXION)
-    
+
     p = Product(db_connexion)
     test = p.get_nutri_score_by_name(("Minis Banana", "weetabix"))
     print(test)

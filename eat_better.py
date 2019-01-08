@@ -31,11 +31,8 @@ def main():
             print("Installation terminée, vous pouvez utiliser l'application !")
 
     else:
-        # Initialisation
-        db_connexion = records.Database(DB_CONNEXION) 
-      
+        db_connexion = records.Database(DB_CONNEXION)       
         Navigation(db_connexion).active()
-
         db_connexion.db.close()
 
 

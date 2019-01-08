@@ -1,4 +1,6 @@
-from models import Category, Product
+import random
+
+from models import Category, Product, Brand
 from views import Display
 
 
@@ -10,10 +12,12 @@ class Navigation():
         self.db = db_connection
         self.category_table = Category(db_connection)
         self.product_table = Product(db_connection)
+        self.brand_table = Brand(db_connection)
         self.current_pos = 0
         self.selections = {"category": None,
                            "sub_category": None,
                            "name": None,
+                           "brand_id": None,
                            "brand": None,
                            "nutri_score": None}
         self.active = self.main
@@ -106,10 +110,27 @@ class Navigation():
             print(
                 "Aucun produit ne correspond à ce numéro, veuillez sélectionner un numéro valide")
         else:
-            nutri_score = product_table.get_nutri_score_by_name(
-                product_selected)
+            self.selections["name"] = product_selected[0]
+            self.selections["brand"] = self.brand_table.select_id_by_name(product_selected[1])            
 
+            self.selections["nutri_score"] = self.product_table.get_nutri_score_by_name(self.selections)
+            
+            if self.selections["nutri_score"] == 'a':
+                print("Cet aliment est déjà sain, c'est super ! Bon appétit")
+            else:
+                better_products = self.product_table.get_better_products(self.selections)
+
+                if len(better_products) == 0:
+                    print("Aucun aliment ne peut être trouver !")
+                else:
+                    self.substitute = random.choice(better_products)
+                    self.active = self.substitute_proposition
+        
         return self.active()
 
-    def substitute_proposition():
-        pass
+
+        # return self.active()
+
+    def substitute_proposition(self):
+        self.current_pos = 4
+        self.view.substitute_proposition(self.selections, self.substitute)
