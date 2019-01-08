@@ -14,11 +14,10 @@ import settings
 class Table():
     """Represents a generic Table"""
 
-    def __init__(self):
+    def __init__(self, db_connexion):
         """Defines database connection
         """
-        self.db = records.Database(
-            f"mysql+mysqlconnector://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:3306/{settings.DB_NAME}?charset=utf8mb4")
+        self.db = db_connexion
 
     def insert_query(self, data):
         """Generic insert query for inserting data in single column
@@ -47,8 +46,8 @@ class Table():
 
 
 class Product(Table):
-    def __init__(self):
-        Table.__init__(self)
+    def __init__(self, db_connexion):
+        Table.__init__(self, db_connexion)
         self.name = "Product"
         self.columns = ["name", "description", "url", "nutri_score",
                         "category", "sub_category", "store_0", "store_1", "brand"]
@@ -92,7 +91,7 @@ class Product(Table):
             else:
                 print(products.index(product)+1, "/", len(products), end="\r")
 
-            if Product().product_validator(product) == False:
+            if Product(self.db).product_validator(product) == False:
                 errors += 1
                 print("erreurs: ", errors)
                 continue
@@ -101,13 +100,13 @@ class Product(Table):
             product["description"] = product.pop("generic_name")
             product["nutri_score"] = product.pop("nutrition_grade_fr")
 
-            product["brand"] = Brand().select_id_by_name(product.pop("brands"))
+            product["brand"] = Brand(self.db).select_id_by_name(product.pop("brands"))
 
-            categories_id = [Category().select_id_by_name(i)
+            categories_id = [Category(self.db).select_id_by_name(i)
                              for i in product["categories"]]
             del product["categories"]
 
-            stores_id = [Store().select_id_by_name(i)
+            stores_id = [Store(self.db).select_id_by_name(i)
                          for i in product["stores"]]
             del product["stores"]
 
@@ -149,10 +148,56 @@ class Product(Table):
 
         return results
 
+    def get_nutri_score_by_name(self, name_and_brand):
+
+        field_query = {"name": name_and_brand[0], "brand": name_and_brand[1]}
+
+        brand_id = Brand(self.db).select_id_by_name(field_query["brand"])
+
+        field_query["brand"] = brand_id
+
+        query = ("SELECT DISTINCT name, brand, nutri_score " 
+                 "FROM eat_better.product "
+                 "WHERE `name`=:name AND brand=:brand;")
+        
+        rows = self.db.query(query, **field_query)
+
+        return rows[0]
+
+    def select_product_by_name_and_brand(self, name_and_brand):
+
+        field_query = {"name": name_and_brand[0], "brand": name_and_brand[1]}
+
+        brand_id = Brand(self.db).select_id_by_name(field_query["brand"])
+
+        field_query["brand"] = brand_id
+
+        query = ("SELECT DISTINCT * FROM eat_better.product " 
+                 "WHERE name=:name and brand=:brand;")
+
+        rows = self.db.query(query, **field_query)
+
+        return rows[0]
+
+    def get_better_products(self, nutri_score):
+
+        all_nutri_scores = ['a', 'b', 'c', 'd', 'e']
+        nutri_score_wanted = tuple(n for n in all_nutri_scores if n < nutri_score)
+
+        
+        query = ("SELECT DISTINCT name, description, brand, store_0, store_1, url "
+                 "FROM eat_better.product "
+                 f"WHERE nutri_score IN {nutri_score_wanted} " 
+                 "AND category=40 AND sub_category=74 "
+                 "ORDER BY nutri_score "
+                 "LIMIT 5;")
+
+        rows = self.db.query(query)
+
 
 class Category(Table):
-    def __init__(self):
-        Table.__init__(self)
+    def __init__(self, db_connexion):
+        Table.__init__(self, db_connexion)
         self.name = "Category"
         self.columns = "name"
 
@@ -194,19 +239,28 @@ class Category(Table):
 
 
 class Brand(Table):
-    def __init__(self):
-        Table.__init__(self)
+
+    def __init__(self, db_connexion):
+        Table.__init__(self, db_connexion)
         self.name = "Brand"
         self.columns = "name"
 
 
 class Store(Table):
-    def __init__(self):
-        Table.__init__(self)
+
+    def __init__(self, db_connexion):
+        Table.__init__(self, db_connexion)
         self.name = "Store"
         self.columns = "name"
 
 
 if __name__ == "__main__":
-    c = Product().select_product_list_by_category(23)
-    print(c)
+    # c = Category(settings.DB_CONNEXION).select_five_main_categories()
+    print(settings.DB_CONNEXION)
+    db_connexion = records.Database(settings.DB_CONNEXION)
+    
+    p = Product(db_connexion)
+    test = p.get_nutri_score_by_name(("Minis Banana", "weetabix"))
+    print(test)
+
+    db_connexion.close

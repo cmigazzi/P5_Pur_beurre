@@ -13,9 +13,8 @@ class Display():
               sep="\n")
         self.main_menu_options = [
             "Quel aliment souhaitez-vous remplacer ?", "Retrouver mes aliments substitués.", "Quitter"]
-        self. options = None
 
-    def template_menu(self, options, sub_menu):
+    def template_menu(self, sub_menu, options=None):
         if options == None:
             self.options = self.main_menu_options
         else:
@@ -54,3 +53,5 @@ class Display():
                 print("Pour faire votre choix, veuillez saisir un nombre valide")
                 continue
             return choice
+
+

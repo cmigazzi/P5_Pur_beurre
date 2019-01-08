@@ -70,22 +70,13 @@ def save_data():
         for product in products_in_category:
             try:
                 categories = clean_tag(product["categories"], 100)
-            except KeyError:
-                value_err += 1
-                continue
-            try:
                 stores = clean_tag(product["stores"], 45)
-            except KeyError:
-                value_err += 1
-                continue
-
-            try:
                 brands = clean_tag(product["brands"], 45)
+                category_index = categories.index(category)
             except KeyError:
                 value_err += 1
                 continue
-            try:
-                category_index = categories.index(category)
+                
             except ValueError:
                 value_err += 1
                 continue
