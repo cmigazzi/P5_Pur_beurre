@@ -1,3 +1,5 @@
+"""This module control the flow of the application."""
+
 import random
 
 from models import Category, Product, Brand
@@ -5,8 +7,25 @@ from views import Display
 
 
 class Navigation():
+    """This class represents the app navigation tree.
+
+    Arguments:
+        db_connetcion {<class records.Database>} -- database connection
+
+    Attributes:
+        db {<class records.Database>} -- database connection
+        view {<class views.Display>} -- manage the user interface
+        category_table {<class models.Category>} -- manage queries on category table
+        brand_table {<class models.Brand>} -- manage queries on brand table
+        product_table {<class models.Product>} -- manage queries on product table
+        current_pos {int} -- track where the user is in the navigation tree
+        selections {dict} -- keep all the choices of the user
+        active {func} -- active method
+
+    """
 
     def __init__(self, db_connection):
+        """Please see help(Navigation) for more details."""
         self.view = Display()
 
         self.db = db_connection
@@ -23,6 +42,12 @@ class Navigation():
         self.active = self.main
 
     def main(self):
+        """Control the main menu.
+
+        Returns:
+            func|False -- Call another method or return False to quit.
+
+        """
         self.current_pos = 0
         self.view.template_menu(self.current_pos)
         choice = self.view.make_choice(self.current_pos)
@@ -43,6 +68,12 @@ class Navigation():
         return self.active()
 
     def categories(self):
+        """Control the categories menu.
+
+        Returns:
+            func -- Call another method
+
+        """
         self.current_pos = 1
         self.view.template_menu(self.current_pos, self.categories_options)
         choice = self.view.make_choice(self.current_pos)
@@ -69,6 +100,12 @@ class Navigation():
         return self.active()
 
     def sub_categories(self):
+        """Control the subcategories menu.
+
+        Returns:
+            func -- Call another method
+
+        """
         self.current_pos = 2
         self.view.template_menu(self.current_pos, self.sub_categories_options)
         choice = self.view.make_choice(self.current_pos)
@@ -95,7 +132,12 @@ class Navigation():
         return self.active()
 
     def products(self):
+        """Control the products menu.
 
+        Returns:
+            func -- Call another method
+
+        """
         self.current_pos = 3
         self.view.template_menu(self.current_pos, self.products_options)
         choice = self.view.make_choice(self.current_pos)
@@ -111,26 +153,35 @@ class Navigation():
                 "Aucun produit ne correspond à ce numéro, veuillez sélectionner un numéro valide")
         else:
             self.selections["name"] = product_selected[0]
-            self.selections["brand"] = self.brand_table.select_id_by_name(product_selected[1])            
+            self.selections["brand"] = product_selected[1]
+            self.selections["brand_id"] = self.brand_table.select_id_by_name(
+                product_selected[1])
 
-            self.selections["nutri_score"] = self.product_table.get_nutri_score_by_name(self.selections)
-            
+            self.selections["nutri_score"] = self.product_table.get_nutri_score_by_name(
+                self.selections)
+
             if self.selections["nutri_score"] == 'a':
                 print("Cet aliment est déjà sain, c'est super ! Bon appétit")
             else:
-                better_products = self.product_table.get_better_products(self.selections)
+                better_products = self.product_table.get_better_products(
+                    self.selections)
 
                 if len(better_products) == 0:
                     print("Aucun aliment ne peut être trouver !")
                 else:
                     self.substitute = random.choice(better_products)
                     self.active = self.substitute_proposition
-        
-        return self.active()
 
+        return self.active()
 
         # return self.active()
 
     def substitute_proposition(self):
+        """Control the substitute proposition menu.
+
+        Returns:
+            func -- Call another method
+
+        """
         self.current_pos = 4
         self.view.substitute_proposition(self.selections, self.substitute)

@@ -1,23 +1,21 @@
-################################################################################
-#           This module contains all the functions to get data from            #
-#                            OpenFoodFacts API                                 #
-################################################################################
+"""Contains all the functions to get data from OpenFoodFacts API."""
+
 
 import requests
 import mysql.connector
 import records
 
-from settings import DB_USER, DB_PASSWORD, DB_HOST, CATEGORIES, SEARCH_API_URL, FIELD_NEEDED, DB_CONNEXION
+from settings import (DB_USER, DB_PASSWORD, DB_HOST, CATEGORIES,
+                      SEARCH_API_URL, FIELD_NEEDED, DB_CONNEXION)
 from models import Category, Brand, Product, Store
 
 
 def create_database():
-    """
-        This function creates the databse schema
+    """Create the databse schema.
 
-        !!! DON'T FORGET to configure                       !!!
-        !!! your username, password, host and database name !!!
-        !!! in settings.py module                           !!!
+    !!! DON'T FORGET to configure                       !!!
+    !!! your username, password, host and database name !!!
+    !!! in settings.py module                           !!!
     """
     db_connection = mysql.connector.connect(user=DB_USER,
                                             password=DB_PASSWORD,
@@ -37,10 +35,11 @@ def create_database():
 
 
 def get_api_data(category):
-    """This function requests the OpenFoodFact API to get data
+    """Request the OpenFoodFact API to get data.
 
     Returns:
         list -- list of dictionnary that represents a product
+
     """
     products = []
 
@@ -58,8 +57,7 @@ def get_api_data(category):
 
 
 def save_data():
-    """This function save the data from OFF API to database"""
-
+    """Save the data requested to database."""
     products = []
     all_categories = []
     all_stores = []
@@ -72,7 +70,7 @@ def save_data():
 
         for product in products_in_category:
 
-            if product_validator(product) == False:
+            if product_validator(product) is False:
                 errors += 1
                 continue
             else:
@@ -121,7 +119,7 @@ def save_data():
 
 
 def product_validator(product):
-
+    """Check if a product is valid."""
     valid_product = True
     # Check KeyError
     try:
@@ -144,13 +142,14 @@ def product_validator(product):
 
 
 def clean_tag(elmt_with_commas, max_lenght):
-    """This function transforms a string of elements separated by commas into a list 
+    """Transform a string of elements separated by commas into a list.
 
     Arguments:
         elmt_with_commas {string with commas} -- elements separated by commas
 
     Returns:
         [list] -- elements in a list
+
     """
     elmt_list = elmt_with_commas.split(",")
     elmt_list = [e.strip() for e in elmt_list if len(e) < max_lenght]
@@ -158,17 +157,17 @@ def clean_tag(elmt_with_commas, max_lenght):
 
 
 def clean_duplicate(list_of_tags):
-    """This function delete duplicates elements in a list
+    """Delete duplicates elements in a list.
 
     Arguments:
         list_of_tags {list} -- list with duplicates
 
     Returns:
         list -- list without duplicates
+
     """
     clean_list = list(set(list_of_tags))
     return clean_list
-
 
 
 if __name__ == "__main__":

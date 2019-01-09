@@ -1,3 +1,6 @@
+"""This module manage all the MySQL queries."""
+
+
 import mysql.connector
 import records
 
@@ -6,37 +9,49 @@ import settings
 # class Database():
 #     def create(self):
 #         db = records.Database(
-#             f"mysql+mysqlconnector://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}")
+#             f"mysql+mysqlconnector://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:3306/")
 
 #         db.query_file('database.sql')
 
 
 class Table():
-    """Represents a generic Table"""
+    """Represent a generic Table.
+
+    Returns:
+        db_connexion {<class records.Database>} -- Records Object that provides database connection
+
+    """
 
     def __init__(self, db_connexion):
-        """Defines database connection
-        """
+        """Please see help(Table) for more details."""
         self.db = db_connexion
 
     def insert_query(self, data):
-        """Generic insert query for inserting data in single column
+        """Insert query for inserting data in single column.
 
         Arguments:
             data {list} -- List of single data
         """
-
         t = self.db.transaction()
 
         for unique_data in data:
             # if len(unique_data) > 100:
 
             self.db.query(
-                f"INSERT INTO {self.name} ({self.columns}) VALUES (:unique_data);", unique_data=unique_data)
+                f"INSERT INTO {self.name} ({self.columns}) VALUES (:unique_data);",
+                unique_data=unique_data)
         t.commit()
 
-
     def select_id_by_name(self, name):
+        """Return id of the name pass in parameter.
+
+        Arguments:
+            name {str} -- name to select
+
+        Returns:
+            str -- id of the name
+
+        """
         rows = self.db.query(
             f"SELECT `id` FROM {self.name} WHERE `name`=:name", name=name)
 
@@ -45,13 +60,35 @@ class Table():
 
 
 class Product(Table):
+    """Represent the Product table.
+
+    Inherit from Table class.
+
+    Arguments:
+        db_connexion {<class records.Database>} -- Records Object that provides database connection
+
+    Attributes:
+        name [str] -- Name of the table
+        columns [list] -- All the columns of the table
+
+    """
+
     def __init__(self, db_connexion):
+        """Please see help(Product) for more details."""
         Table.__init__(self, db_connexion)
         self.name = "Product"
         self.columns = ["name", "description", "url", "nutri_score",
                         "category", "sub_category", "store_0", "store_1", "brand"]
 
     def insert_query(self, products):
+        """Insert product in Product table.
+
+        Override Table method
+
+        Arguments:
+            products {list} -- dictionnaries of product properties
+
+        """
         t = self.db.transaction()
 
         print("Enregistrement des produits dans la base de données:")
@@ -61,7 +98,6 @@ class Product(Table):
                 print(products.index(product)+1, "/", len(products))
             else:
                 print(products.index(product)+1, "/", len(products), end="\r")
-
 
             product["name"] = product.pop("product_name_fr")
             product["description"] = product.pop("generic_name")
@@ -98,7 +134,15 @@ class Product(Table):
         self.db.close()
 
     def select_product_list_by_category(self, selections):
+        """Select products in a single categoy.
 
+        Arguments:
+            selections {dict} -- Selections of the user with keys 'category' and 'sub_category'
+
+        Returns:
+            [list] -- dictionnaires of the row results
+
+        """
         query = (f"SELECT DISTINCT {self.name}.`name` AS `name`, b.`name` AS brand "
                  f"FROM eat_better.{self.name} "
                  "INNER JOIN eat_better.category AS c "
@@ -117,7 +161,15 @@ class Product(Table):
         return results
 
     def get_nutri_score_by_name(self, selections):
+        """Select nutri_score of a product.
 
+        Arguments:
+            selections {dict} -- Selections of the user with keys 'name' and 'brand'.
+
+        Returns:
+            str -- the nutri_score of the product.
+
+        """
         query = ("SELECT DISTINCT nutri_score "
                  "FROM eat_better.product "
                  "WHERE `name`=:name AND brand=:brand;")
@@ -127,12 +179,21 @@ class Product(Table):
         return rows[0].nutri_score
 
     def get_better_products(self, selections):
+        """Select maximum 5 better products.
 
+        Arguments:
+            selections {dict} -- Selections of the user with keys 'nutri_score'
+
+        Returns:
+           list -- dictionnaries with query result
+
+        """
         all_nutri_scores = ['a', 'b', 'c', 'd', 'e']
         nutri_score_wanted = tuple(
             n for n in all_nutri_scores if n < selections["nutri_score"])
 
-        query = ("SELECT DISTINCT product.name AS name, description, b.name AS brand, s0.name AS store_0, s1.name AS store_1, url "
+        query = ("SELECT DISTINCT product.name AS name, description, "
+                 "b.name AS brand, s0.name AS store_0, s1.name AS store_1, url "
                  "FROM eat_better.product "
                  "INNER JOIN eat_better.brand AS b "
                  "ON product.brand = b.id "
@@ -151,13 +212,32 @@ class Product(Table):
 
 
 class Category(Table):
+    """Represent the Category table.
+
+    Inherit from Table class and extend insert_query and select_id_by_name methods.
+
+    Arguments:
+        db_connexion {<class records.Database>} -- Records Object that provides database connection
+
+    Attributes:
+        name [str] -- Name of the table
+        columns [list] -- All the columns of the table
+
+    """
+
     def __init__(self, db_connexion):
+        """Please see help(Category) for more details."""
         Table.__init__(self, db_connexion)
         self.name = "Category"
         self.columns = "name"
 
     def select_five_main_categories(self):
+        """Select the main categories.
 
+        Returns:
+            list -- names of the categories
+
+        """
         query = (f"SELECT DISTINCT {self.name}.`name` "
                  "FROM eat_better.product "
                  f"INNER JOIN eat_better.{self.name} "
@@ -174,7 +254,15 @@ class Category(Table):
         return results
 
     def select_sub_categories(self, selections):
+        """Select maximum 20 sub categories.
 
+        Arguments:
+            selections {dict} -- Selections of the user with keys 'ncategory'.
+
+        Returns:
+            list -- names of the sub-categories
+
+        """
         query = ("SELECT DISTINCT category.`name`, category.id "
                  "FROM eat_better.product "
                  "INNER JOIN eat_better.category "
@@ -194,16 +282,42 @@ class Category(Table):
 
 
 class Brand(Table):
+    """Represent the Brand table.
+
+    Inherit from Table class and extend insert_query and select_id_by_name methods.
+
+    Arguments:
+        db_connexion {<class records.Database>} -- Records Object that provides database connection
+
+    Attributes:
+        name [str] -- Name of the table
+        columns [list] -- All the columns of the table
+
+    """
 
     def __init__(self, db_connexion):
+        """Please see help(Brand) for more details."""
         Table.__init__(self, db_connexion)
         self.name = "Brand"
         self.columns = "name"
 
 
 class Store(Table):
+    """Represent the Store table.
+
+    Inherit from Table class and extend insert_query and select_id_by_name methods.
+
+    Arguments:
+        db_connexion {<class records.Database>} -- Records Object that provides database connection
+
+    Attributes:
+        name [str] -- Name of the table
+        columns [list] -- All the columns of the table
+
+    """
 
     def __init__(self, db_connexion):
+        """Please see help(Store) for more details."""
         Table.__init__(self, db_connexion)
         self.name = "Store"
         self.columns = "name"
@@ -211,11 +325,12 @@ class Store(Table):
 
 if __name__ == "__main__":
     # c = Category(settings.DB_CONNEXION).select_five_main_categories()
-    print(settings.DB_CONNEXION)
-    db_connexion = records.Database(settings.DB_CONNEXION)
+    # print(settings.DB_CONNEXION)
 
+    db_connexion = records.Database(settings.DB_CONNEXION)
     p = Product(db_connexion)
     test = p.get_nutri_score_by_name(("Minis Banana", "weetabix"))
     print(test)
 
-    db_connexion.close
+    # d = Database()
+    # d.create()
