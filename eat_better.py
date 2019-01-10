@@ -5,7 +5,7 @@ from settings import CATEGORIES, DB_CONNEXION
 from get_data import save_data, create_database
 from views import Display
 from models import Category, Product
-from navigation import Navigation
+from controller import Navigation
 
 
 def parse_arguments():
@@ -18,7 +18,7 @@ def parse_arguments():
 def main():
     args = parse_arguments()
 
-    if args.db_init == True:
+    if args.db_init is True:
         if len(CATEGORIES) > 5:
             print("Il y a plus de 5 catégories, veuillez en enlever dans settings.py")
         elif len(CATEGORIES) < 1:
@@ -31,7 +31,7 @@ def main():
             print("Installation terminée, vous pouvez utiliser l'application !")
 
     else:
-        db_connexion = records.Database(DB_CONNEXION)       
+        db_connexion = records.Database(DB_CONNEXION)
         Navigation(db_connexion).active()
         db_connexion.db.close()
 

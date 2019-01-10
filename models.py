@@ -193,7 +193,7 @@ class Product(Table):
             n for n in all_nutri_scores if n < selections["nutri_score"])
 
         query = ("SELECT DISTINCT product.name AS name, description, "
-                 "b.name AS brand, s0.name AS store_0, s1.name AS store_1, url "
+                 "b.name AS brand_name, b.id AS brand, s0.name AS store_0, s1.name AS store_1, url "
                  "FROM eat_better.product "
                  "INNER JOIN eat_better.brand AS b "
                  "ON product.brand = b.id "
@@ -323,14 +323,52 @@ class Store(Table):
         self.columns = "name"
 
 
+class Substitution(Table):
+
+    def __init__(self, db_connexion):
+        Table.__init__(self, db_connexion)
+        self.name = "Substitution"
+        self.columns = ["original", "substitute"]
+
+    def save_substitution(self, selections):
+        t = self.db.transaction()
+        query = (f"INSERT INTO {self.name} (original, substitute) VALUES "
+                 "((SELECT id FROM Product WHERE name=:name AND brand=:brand LIMIT 1), "
+                 "(SELECT id FROM Product WHERE name=:substitute AND brand=:substitute_brand LIMIT 1));")
+
+        self.db.query(query, **selections)
+        t.commit()
+
+    def get_all(self):
+
+        query = ("SELECT o.name AS original, ob.name AS original_brand, s.name AS substitute, "
+                 "sb.name AS substitute_brand, s.url AS url "
+                 "FROM eat_better.substitution "
+                 "INNER JOIN eat_better.product AS o "
+                 "ON substitution.original = o.id "
+                 "INNER JOIN eat_better.product AS s "
+                 "ON substitution.substitute = s.id "
+                 "INNER JOIN eat_better.brand AS ob "
+                 "ON o.brand = ob.id "
+                 "INNER JOIN eat_better.brand AS sb "
+                 "ON s.brand = sb.id;")
+
+        rows = self.db.query(query)
+
+        return rows.all()
+
+
 if __name__ == "__main__":
     # c = Category(settings.DB_CONNEXION).select_five_main_categories()
     # print(settings.DB_CONNEXION)
 
-    db_connexion = records.Database(settings.DB_CONNEXION)
-    p = Product(db_connexion)
-    test = p.get_nutri_score_by_name(("Minis Banana", "weetabix"))
-    print(test)
+    db_connexion=records.Database(settings.DB_CONNEXION)
+    p=Product(db_connexion)
 
+    s=Substitution(db_connexion)
+    selections={"name": "Maïzena", "brand": 54,
+                  "substitute": "Spécial K", "substitute_brand": 61}
+    test=s.get_all()
+    print(test)
     # d = Database()
     # d.create()

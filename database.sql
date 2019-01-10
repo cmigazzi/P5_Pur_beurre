@@ -70,9 +70,9 @@ ENGINE = InnoDB;
 
 
 CREATE TABLE IF NOT EXISTS `eat_better`.`Substitution` (
-  `id` SMALLINT NOT NULL,
-  `original` INT NULL,
-  `substitute` INT NULL,
+  `id` SMALLINT NOT NULL AUTO_INCREMENT,
+  `original` INT NOT NULL,
+  `substitute` INT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_substitution_idx` (`original` ASC) VISIBLE,
   INDEX `fk_substitute_idx` (`substitute` ASC) VISIBLE,
