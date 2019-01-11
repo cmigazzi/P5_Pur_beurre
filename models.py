@@ -4,14 +4,7 @@
 import mysql.connector
 import records
 
-import settings
-
-# class Database():
-#     def create(self):
-#         db = records.Database(
-#             f"mysql+mysqlconnector://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:3306/")
-
-#         db.query_file('database.sql')
+from settings import DB_NAME
 
 
 class Table():
@@ -135,10 +128,10 @@ class Product(Table):
 
         """
         query = (f"SELECT DISTINCT {self.name}.`name` AS `name`, b.`name` AS brand "
-                 f"FROM eat_better.{self.name} "
-                 "INNER JOIN eat_better.category AS c "
+                 f"FROM {DB_NAME}.{self.name} "
+                 f"INNER JOIN {DB_NAME}.category AS c "
                  f"ON {self.name}.sub_category = c.id "
-                 "INNER JOIN eat_better.brand AS b "
+                 f"INNER JOIN {DB_NAME}.brand AS b "
                  f"ON {self.name}.brand = b.id "
                  f"AND {self.name}.category = {selections['category']} "
                  f"AND {self.name}.sub_category = {selections['sub_category']} "
@@ -162,7 +155,7 @@ class Product(Table):
 
         """
         query = ("SELECT DISTINCT nutri_score "
-                 "FROM eat_better.product "
+                 f"FROM {DB_NAME}.product "
                  "WHERE `name`=:name AND brand=:brand;")
 
         rows = self.db.query(query, **selections)
@@ -185,12 +178,12 @@ class Product(Table):
 
         query = ("SELECT DISTINCT product.name AS name, description, "
                  "b.name AS brand_name, b.id AS brand, s0.name AS store_0, s1.name AS store_1, url "
-                 "FROM eat_better.product "
-                 "INNER JOIN eat_better.brand AS b "
+                 f"FROM {DB_NAME}.product "
+                 f"INNER JOIN {DB_NAME}.brand AS b "
                  "ON product.brand = b.id "
-                 "INNER JOIN eat_better.store AS s0 "
+                 f"INNER JOIN {DB_NAME}.store AS s0 "
                  "ON product.store_0 = s0.id "
-                 "INNER JOIN eat_better.store AS s1 "
+                 f"INNER JOIN {DB_NAME}.store AS s1 "
                  "ON product.store_1 = s1.id "
                  f"WHERE nutri_score IN {nutri_score_wanted} "
                  "AND category=:category AND sub_category=:sub_category "
@@ -230,8 +223,8 @@ class Category(Table):
 
         """
         query = (f"SELECT DISTINCT {self.name}.`name` "
-                 "FROM eat_better.product "
-                 f"INNER JOIN eat_better.{self.name} "
+                 f"FROM {DB_NAME}.product "
+                 f"INNER JOIN {DB_NAME}.{self.name} "
                  f"ON product.category = {self.name}.id "
                  f"WHERE {self.name}.`name` NOT LIKE 'en:%' OR 'fr:%' "
                  f"GROUP BY {self.name}.`name` "
@@ -255,8 +248,8 @@ class Category(Table):
 
         """
         query = ("SELECT DISTINCT category.`name`, category.id "
-                 "FROM eat_better.product "
-                 "INNER JOIN eat_better.category "
+                 f"FROM {DB_NAME}.product "
+                 f"INNER JOIN {DB_NAME}.category "
                  f"ON product.sub_category = category.id "
                  f"WHERE product.category={selections['category']} "
                  "AND category.`name` NOT LIKE 'en:%' OR 'fr:%' "
@@ -336,7 +329,7 @@ class Substitution(Table):
 
     def save_substitution(self, selections):
         """Save the substitution.
-        
+
         Arguments:
             selections {dict} -- original and substitute products properties.
         """
@@ -353,14 +346,14 @@ class Substitution(Table):
 
         query = ("SELECT o.name AS original, ob.name AS original_brand, s.name AS substitute, "
                  "sb.name AS substitute_brand, s.url AS url "
-                 "FROM eat_better.substitution "
-                 "INNER JOIN eat_better.product AS o "
+                 f"FROM {DB_NAME}.substitution "
+                 f"INNER JOIN {DB_NAME}.product AS o "
                  "ON substitution.original = o.id "
-                 "INNER JOIN eat_better.product AS s "
+                 f"INNER JOIN {DB_NAME}.product AS s "
                  "ON substitution.substitute = s.id "
-                 "INNER JOIN eat_better.brand AS ob "
+                 f"INNER JOIN {DB_NAME}.brand AS ob "
                  "ON o.brand = ob.id "
-                 "INNER JOIN eat_better.brand AS sb "
+                 f"INNER JOIN {DB_NAME}.brand AS sb "
                  "ON s.brand = sb.id;")
 
         rows = self.db.query(query)
