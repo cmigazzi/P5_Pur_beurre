@@ -22,19 +22,19 @@ To do that, make sure that Python3, venv, git and MySql are installed and follow
 
 - Go to settings.py to enter your mysql username, password, host, port and db_name at lines 7-11
 
-- install database schema and get datas: `python3 eat_better.py --init-db`
+- install database schema and get datas: `python eat_better.py --init-db`
 This may takes few minutes, so let's take a coffee
 
 - If everything goes right, you can launch the application: `python eat_better.py`
 
-# Select a product you want to replace
+## Select a product you want to replace
 
 On main menu, enter 1.
 To select a product, you have first to select a category and a subcategory with numeric characters.
 When you've found the product, the application displays a substitute. 
 If you want, you can save the substitution for later.
 
-# Retrive a substitution
+## Retrive a substitution
 
 On main menu, enter 2 and the application displays the list of all substitution
     
