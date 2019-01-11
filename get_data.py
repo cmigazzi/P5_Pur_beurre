@@ -5,8 +5,7 @@ import requests
 import mysql.connector
 import records
 
-from settings import (DB_USER, DB_PASSWORD, DB_HOST, CATEGORIES,
-                      SEARCH_API_URL, FIELD_NEEDED, DB_CONNEXION)
+from settings import CATEGORIES, SEARCH_API_URL, FIELD_NEEDED, DB_CONNEXION
 from models import Category, Brand, Product, Store
 
 

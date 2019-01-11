@@ -49,9 +49,9 @@ class CategoryCreator(TableCreator):
     def __init__(self, db_connection):
         """Set create query as attribute."""
         super().__init__(db_connection)
-        self.query = ("CREATE TABLE IF NOT EXISTS `eat_better`.`Category` ("
+        self.query = (f"CREATE TABLE IF NOT EXISTS `{self.db_name}`.`Category` ("
                       "`id` SMALLINT NOT NULL AUTO_INCREMENT,"
-                      "`name` VARCHAR(100) NULL,"
+                      "`name` VARCHAR(100) NOT NULL,"
                       "PRIMARY KEY (`id`))"
                       "ENGINE = InnoDB;")
 
@@ -67,9 +67,9 @@ class StoreCreator(TableCreator):
     def __init__(self, db_connection):
         """Set create query as attribute."""
         super().__init__(db_connection)
-        self.query = ("CREATE TABLE IF NOT EXISTS `eat_better`.`Store` ("
+        self.query = (f"CREATE TABLE IF NOT EXISTS `{self.db_name}`.`Store` ("
                       "`id` SMALLINT NOT NULL AUTO_INCREMENT,"
-                      "`name` VARCHAR(45) NULL,"
+                      "`name` VARCHAR(45) NOT NULL,"
                       "PRIMARY KEY (`id`))"
                       "ENGINE = InnoDB;")
 
@@ -85,9 +85,9 @@ class BrandCreator(TableCreator):
     def __init__(self, db_connection):
         """Set create query as attribute."""
         super().__init__(db_connection)
-        self.query = ("CREATE TABLE IF NOT EXISTS `eat_better`.`Brand` ("
+        self.query = (f"CREATE TABLE IF NOT EXISTS `{self.db_name}`.`Brand` ("
                       "`id` SMALLINT NOT NULL AUTO_INCREMENT, "
-                      "`name` VARCHAR(45) NULL,"
+                      "`name` VARCHAR(45) NOT NULL,"
                       "PRIMARY KEY (`id`)) "
                       "ENGINE = InnoDB;")
 
@@ -103,7 +103,7 @@ class ProductCreator(TableCreator):
     def __init__(self, db_connection):
         """Set create query as attribute."""
         super().__init__(db_connection)
-        self.query = ("CREATE TABLE IF NOT EXISTS `eat_better`.`Product` ("
+        self.query = (f"CREATE TABLE IF NOT EXISTS `{self.db_name}`.`Product` ("
                       "`id` INT NOT NULL AUTO_INCREMENT, "
                       "`name` VARCHAR(150) NOT NULL, "
                       "`description` TINYTEXT NULL, "
@@ -123,27 +123,27 @@ class ProductCreator(TableCreator):
                       "INDEX `fk_brand_idx` (`brand` ASC) VISIBLE, "
                       "CONSTRAINT `fk_category` "
                       "FOREIGN KEY (`category`) "
-                      "REFERENCES `eat_better`.`Category` (`id`) "
+                      f"REFERENCES `{self.db_name}`.`Category` (`id`) "
                       "ON DELETE NO ACTION "
                       "ON UPDATE NO ACTION, "
                       "CONSTRAINT `fk_sub_category` "
                       "FOREIGN KEY (`sub_category`) "
-                      "REFERENCES `eat_better`.`Category` (`id`) "
+                      f"REFERENCES `{self.db_name}`.`Category` (`id`) "
                       "ON DELETE NO ACTION "
                       "ON UPDATE NO ACTION, "
                       "CONSTRAINT `fk_store_0` "
                       "FOREIGN KEY (`store_0`) "
-                      "REFERENCES `eat_better`.`Store` (`id`) "
+                      f"REFERENCES `{self.db_name}`.`Store` (`id`) "
                       "ON DELETE NO ACTION "
                       "ON UPDATE NO ACTION, "
                       "CONSTRAINT `fk_store_1` "
                       "FOREIGN KEY (`store_1`) "
-                      "REFERENCES `eat_better`.`Store` (`id`) "
+                      f"REFERENCES `{self.db_name}`.`Store` (`id`) "
                       "ON DELETE NO ACTION "
                       "ON UPDATE NO ACTION, "
                       "CONSTRAINT `fk_brand` "
                       "FOREIGN KEY (`brand`) "
-                      "REFERENCES `eat_better`.`Brand` (`id`) "
+                      f"REFERENCES `{self.db_name}`.`Brand` (`id`) "
                       "ON DELETE NO ACTION "
                       "ON UPDATE NO ACTION) "
                       "ENGINE = InnoDB;")
@@ -160,7 +160,7 @@ class SubstitutionCreator(TableCreator):
     def __init__(self, db_connection):
         """Set create query as attribute."""
         super().__init__(db_connection)
-        self.query = ("CREATE TABLE IF NOT EXISTS `eat_better`.`Substitution` ("
+        self.query = (f"CREATE TABLE IF NOT EXISTS `{self.db_name}`.`Substitution` ("
                       "`id` SMALLINT NOT NULL AUTO_INCREMENT, "
                       "`original` INT NOT NULL, "
                       "`substitute` INT NOT NULL, "
@@ -169,12 +169,12 @@ class SubstitutionCreator(TableCreator):
                       "INDEX `fk_substitute_idx` (`substitute` ASC) VISIBLE, "
                       "CONSTRAINT `fk_original` "
                       "FOREIGN KEY (`original`) "
-                      "REFERENCES `eat_better`.`Product` (`id`) "
+                      f"REFERENCES `{self.db_name}`.`Product` (`id`) "
                       "ON DELETE NO ACTION "
                       "ON UPDATE NO ACTION, "
                       "CONSTRAINT `fk_substitute` "
                       " FOREIGN KEY (`substitute`) "
-                      "REFERENCES `eat_better`.`Product` (`id`) "
+                      f"REFERENCES `{self.db_name}`.`Product` (`id`) "
                       "ON DELETE NO ACTION "
                       " ON UPDATE NO ACTION) "
                       "ENGINE = InnoDB;")
