@@ -2,9 +2,11 @@
 
 import records
 
+from settings import DB_CONNEXION, CATEGORIES
 from get_data import Api, ProductFromApiToDatabase, DataFromApiToDatabase
 from database import (SchemaCreator, CategoryCreator,
-                      StoreCreator, ProductCreator, SubstitutionCreator)
+                      StoreCreator, BrandCreator, ProductCreator, SubstitutionCreator)
+
 
 
 def setup():
@@ -46,5 +48,7 @@ def setup():
     stores.save()
     brands.save()
     products.save()
+
+    db_connection.close()
 
     print("Installation terminée, vous pouvez utiliser l'application !")

@@ -314,7 +314,8 @@ class Store(Table):
         self.columns = "name"
 
 
-class Substitution(Table):"""Represent the Substitution table.
+class Substitution(Table):
+    """Represent the Substitution table.
 
     Inherit from Table class and extend insert_query and select_id_by_name methods.
 

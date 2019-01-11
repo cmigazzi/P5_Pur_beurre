@@ -6,7 +6,7 @@ import records
 from settings import CATEGORIES, DB_CONNEXION
 from views import Display
 from controller import Navigation
-
+from install import setup
 
 def parse_arguments():
     """Set the CLI argument for database installation."""
