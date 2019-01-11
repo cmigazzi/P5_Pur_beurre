@@ -1,10 +1,11 @@
-################################################################################
-#           This module contains all the views of the program                  #
-################################################################################
+"""This module contains all the views of the program."""
 
 
 class Display():
+    """Represent the User Interface."""
+
     def __init__(self):
+        """Print intro."""
         print("##################################################",
               "######             EAT BETTER             ########",
               "# L'application pour une alimentation plus saine #",
@@ -15,6 +16,14 @@ class Display():
             "Quel aliment souhaitez-vous remplacer ?", "Retrouver mes aliments substitués.", "Quitter"]
 
     def template_menu(self, menu_tree, options=None):
+        """Display list.
+
+        Arguments:
+            menu_tree {int} -- place in navigation tree
+
+        Keyword Arguments:
+            options {list} -- list of options to display (default: {None})
+        """
         if options is None:
             self.options = self.main_menu_options
         else:
@@ -44,7 +53,13 @@ class Display():
             print("0 - Retour")
 
     def substitute_proposition(self, selections, substitute):
+        """Display the substitute proposition.
 
+        Arguments:
+            selections {dict} -- selections made by the user
+            substitute {list} -- substitute product property
+
+        """
         print(f"\nNous vous proposons de remplacer le produit {selections['name']} de la marque {selections['brand_name']} par: \n",
               f"{ substitute.name } de la marque { substitute.brand_name}. \n",
               f"Description: {substitute.description}",
@@ -57,14 +72,20 @@ class Display():
               sep="\n")
 
     def substitutes(self, substitutions):
+        """Display all the substitutions saved.
+
+        Arguments:
+            substitutions {list} -- substitutions
+        """
         for products in substitutions:
             print(f"Le produit {products.original} de la marque {products.original_brand}",
                   "a été substitué par: ",
                   f"{products.substitute} de la marque {products.substitute_brand}",
-                  f"Pour plus de détails: url",
+                  f"Pour plus de détails: {products.url}",
                   sep="\n")
 
     def make_choice(self):
+        """Validate and save choice of the user."""
         make_choice = True
         while make_choice is True:
 

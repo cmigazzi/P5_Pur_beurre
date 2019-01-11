@@ -10,165 +10,198 @@ from settings import (DB_USER, DB_PASSWORD, DB_HOST, CATEGORIES,
 from models import Category, Brand, Product, Store
 
 
-def create_database():
-    """Create the databse schema.
+class Api():
+    """Represent the API caller."""
 
-    !!! DON'T FORGET to configure                       !!!
-    !!! your username, password, host and database name !!!
-    !!! in settings.py module                           !!!
-    """
-    db_connection = mysql.connector.connect(user=DB_USER,
-                                            password=DB_PASSWORD,
-                                            host=DB_HOST)
+    def call(self):
+        """Request the OpenFoodFact API to get data.
 
-    cursor = db_connection.cursor()
+        Returns:
+            list -- list of dictionnary that represents a product
 
-    f = open("database.sql", "r")
-    query = " ".join(f.readlines())
-    iterator = cursor.execute(query, multi=True)
-    for i in iterator:
-        i
+        """
+        clean_products = []
 
-    cursor.close()
-    f.close()
-    db_connection.close()
+        for category in CATEGORIES:
+            api_url = SEARCH_API_URL + \
+                f"?search_terms={category}&search_tag=category&sort_by=unique_scans_n&page_size=1000&json=1"
+            json_response = requests.get(api_url).json()
+            products = json_response["products"]
 
+            for product in products:
+                clean_product = {
+                    k: v for k, v in product.items() if k in FIELD_NEEDED and v != ''}
+                clean_products.append(clean_product)
 
-def get_api_data(category):
-    """Request the OpenFoodFact API to get data.
-
-    Returns:
-        list -- list of dictionnary that represents a product
-
-    """
-    products = []
-
-    url = SEARCH_API_URL + \
-        f"?search_terms={category}&search_tag=category&sort_by=unique_scans_n&page_size=250&json=1"
-    json_response = requests.get(url).json()
-    products_list = json_response["products"]
-
-    for complete_product in products_list:
-        clean_product = {
-            k: v for k, v in complete_product.items() if k in FIELD_NEEDED}
-        products.append(clean_product)
-
-    return products
+        return clean_products
 
 
-def save_data():
-    """Save the data requested to database."""
-    products = []
-    all_categories = []
-    all_stores = []
-    all_brands = []
-    errors = 0
-
-    for category in CATEGORIES:
-        print(f"Chargement des produits de type {category}")
-        products_in_category = get_api_data(category)
-
-        for product in products_in_category:
-
-            if product_validator(product) is False:
-                errors += 1
-                continue
-            else:
-
-                try:
-                    categories = clean_tag(product["categories"], 100)
-                    stores = clean_tag(product["stores"], 45)
-                    brands = clean_tag(product["brands"], 45)
-                    category_index = categories.index(category)
-                except KeyError:
-                    errors += 1
-                    continue
-                except ValueError:
-                    errors += 1
-                    continue
-
-            filter_categories = categories[category_index:category_index+2]
-            product["categories"] = [
-                category for category in filter_categories]
-
-            filter_stores = stores[:2]
-            product["stores"] = [store for store in filter_stores]
-
-            product["brands"] = brands[0]
-
-            all_categories += filter_categories
-            all_stores += filter_stores
-            all_brands.append(product["brands"])
-
-            products.append(product)
-
-    print(f"{errors} éléments n'ont pas pu être importés car ils sont incomplets.")
-
-    clean_categories = clean_duplicate(all_categories)
-    clean_brands = clean_duplicate(all_brands)
-    clean_stores = clean_duplicate(all_stores)
-
-    db_connection = records.Database(DB_CONNEXION)
-
-    Category(db_connection).insert_query(clean_categories)
-    Brand(db_connection).insert_query(clean_brands)
-    Store(db_connection).insert_query(clean_stores)
-    Product(db_connection).insert_query(products)
-
-    db_connection.close()
-
-
-def product_validator(product):
-    """Check if a product is valid."""
-    valid_product = True
-    # Check KeyError
-    try:
-        product["product_name_fr"]
-        product["generic_name"]
-        product["url"]
-        product["nutrition_grade_fr"]
-    except KeyError:
-        valid_product = False
-
-    # Check empty field and lenght of generic_name
-    for key, value in product.items():
-        if value == '':
-            valid_product = False
-            break
-        if key == "generic_name":
-            if len(value) > 255:
-                valid_product = False
-    return valid_product
-
-
-def clean_tag(elmt_with_commas, max_lenght):
-    """Transform a string of elements separated by commas into a list.
+class DataFromApiToDatabase():
+    """Represent data batch from api call to database.
 
     Arguments:
-        elmt_with_commas {string with commas} -- elements separated by commas
-
-    Returns:
-        [list] -- elements in a list
+        db_connection {<class records.Database>} -- database connection object
+        table {str} -- name of the target table
 
     """
-    elmt_list = elmt_with_commas.split(",")
-    elmt_list = [e.strip() for e in elmt_list if len(e) < max_lenght]
-    return elmt_list
+
+    def __init__(self, db_connection, table):
+        """Please see help(DataFromApiToDatabase) for more details."""
+        self.elements = []
+        self.db = db_connection
+        self.table = table
+
+    def __add__(self, element):
+        """Add elements to self.elements.
+
+        Arguments:
+            element {list} -- new data
+        """
+        self.elements += element
+
+    def __str__(self):
+        """Print the list of the elements."""
+        return str(self.elements)
+
+    def append(self, element):
+        """Append a single string in self.elements.
+
+        Arguments:
+            element {str} -- new data
+
+        """
+        self.elements.append(element)
+
+    def clean_duplicate(self):
+        """Delete duplicates in self.elements."""
+        self.elements = list(set(self.elements))
+        self.elements = [e for e in self.elements if e != '']
+
+    def save(self):
+        """Save data in target table."""
+        if self.table == "Category":
+            Category(self.db).insert_query(self.elements)
+        elif self.table == "Brand":
+            Brand(self.db).insert_query(self.elements)
+        elif self.table == "Store":
+            Store(self.db).insert_query(self.elements)
+        elif self.table == "Product":
+            Product(self.db).insert_query(self.elements)
 
 
-def clean_duplicate(list_of_tags):
-    """Delete duplicates elements in a list.
+class ProductFromApiToDatabase():
+    """Represent a product from api call to database saving.
 
     Arguments:
-        list_of_tags {list} -- list with duplicates
-
-    Returns:
-        list -- list without duplicates
+        product {list} -- dictionnaries of products property
+        category {str} -- main category of the product
+        db_connection {<class records.Database>} -- Records Object that provides database connection
 
     """
-    clean_list = list(set(list_of_tags))
-    return clean_list
+
+    def __init__(self, product, category, db_connection):
+        """Please see help(ProductFromApiToDatabase) for more details."""
+        self.db = db_connection
+        self.fields = product
+        self.category = category
+        self.categories = None
+        self.stores = None
+        self.brand = None
+        self.category_index = None
+        self.errors = 0
+
+    def __str__(self):
+        """Print product dict."""
+        return f"{self.fields}"
+
+    @staticmethod
+    def clean_tag(elmt_with_commas, max_lenght):
+        """Transform a string of elements separated by commas into a list.
+
+        Arguments:
+            elmt_with_commas {string with commas} -- elements separated by commas
+
+        Returns:
+            [list] -- elements in a list
+
+        """
+        elmt_list = elmt_with_commas.split(",")
+        elmt_list = [e.strip() for e in elmt_list if len(e) < max_lenght]
+        return elmt_list
+
+    def validate(self):
+        """Check if a product is valid."""
+        # Check KeyError
+        try:
+            self.fields["product_name_fr"]
+            self.fields["generic_name"]
+            self.fields["url"]
+            self.fields["nutrition_grade_fr"]
+            self.fields["categories"]
+            self.fields["stores"]
+            self.fields["brands"]
+        except KeyError:
+            return False
+
+        # Check empty field and lenght of generic_name
+        for key, value in self.fields.items():
+            if value == '':
+                return False
+                break
+            if key == "generic_name":
+                if len(value) > 255:
+                    return False
+
+        try:
+            self.categories = ProductFromApiToDatabase.clean_tag(
+                self.fields["categories"], 100)
+            self.stores = ProductFromApiToDatabase.clean_tag(
+                self.fields["stores"], 45)
+            self.brands = ProductFromApiToDatabase.clean_tag(
+                self.fields["brands"], 45)
+            self.category_index = self.categories.index(self.category)
+        except KeyError:
+            return False
+        except ValueError:
+            return False
+        except AttributeError:
+            self.errors += 1
+            print(self.errors)
+            return False
+
+    def clean(self):
+        """Clean and format product property to be saved."""
+        # clean categories
+        filter_categories = self.categories[self.category_index: self.category_index+2]
+        self.categories = [
+            category for category in filter_categories if category != '']
+        del self.fields["categories"]
+        self.fields["category"] = self.categories[0]
+
+        try:
+            self.fields["sub_category"] = self.categories[1]
+        except IndexError:
+            self.fields["sub_category"] = None
+
+        # clean stores
+        filter_stores = self.stores[:2]
+        self.stores = [store for store in filter_stores]
+        del self.fields["stores"]
+
+        for n in range(len(self.stores)):
+            field_name = "store_" + str(n)
+            self.fields[field_name] = self.stores[n]
+
+        # clean brand
+        self.brand = self.brands[0]
+        self.fields["brand"] = self.brand
+        del self.fields["brands"]
+
+        # clean others fields
+        self.fields["name"] = self.fields.pop("product_name_fr")
+        self.fields["description"] = self.fields.pop("generic_name")
+        self.fields["nutri_score"] = self.fields.pop("nutrition_grade_fr")
 
 
 if __name__ == "__main__":
-    save_data()
+    pass

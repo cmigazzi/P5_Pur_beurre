@@ -17,7 +17,7 @@ import settings
 class Table():
     """Represent a generic Table.
 
-    Returns:
+    Arguments:
         db_connexion {<class records.Database>} -- Records Object that provides database connection
 
     """
@@ -35,7 +35,6 @@ class Table():
         t = self.db.transaction()
 
         for unique_data in data:
-            # if len(unique_data) > 100:
 
             self.db.query(
                 f"INSERT INTO {self.name} ({self.columns}) VALUES (:unique_data);",
@@ -99,30 +98,22 @@ class Product(Table):
             else:
                 print(products.index(product)+1, "/", len(products), end="\r")
 
-            product["name"] = product.pop("product_name_fr")
-            product["description"] = product.pop("generic_name")
-            product["nutri_score"] = product.pop("nutrition_grade_fr")
-
             product["brand"] = Brand(self.db).select_id_by_name(
-                product.pop("brands"))
+                product["brand"])
 
-            categories_id = [Category(self.db).select_id_by_name(i)
-                             for i in product["categories"]]
-            del product["categories"]
+            product["category"] = Category(self.db).select_id_by_name(product["category"])
 
-            stores_id = [Store(self.db).select_id_by_name(i)
-                         for i in product["stores"]]
-            del product["stores"]
+            if product["sub_category"] is not None:
+                product["sub_category"] = Category(self.db).select_id_by_name(product["sub_category"])
 
-            product["category"] = categories_id[0]
+            product["store_0"] = Store(self.db).select_id_by_name(product["store_0"])
+
             try:
-                product["sub_category"] = categories_id[1]
-            except IndexError:
-                product["sub_category"] = None
-
-            for n in range(len(stores_id)):
-                field_name = "store_" + str(n)
-                product[field_name] = stores_id[n]
+                product["store_1"]
+            except KeyError:
+                pass
+            else:
+                product["store_1"] = Store(self.db).select_id_by_name(product["store_1"])
 
             columns = ", ".join(product.keys())
             values = ", ".join([":"+str(i) for i in product.keys()])
@@ -323,14 +314,32 @@ class Store(Table):
         self.columns = "name"
 
 
-class Substitution(Table):
+class Substitution(Table):"""Represent the Substitution table.
+
+    Inherit from Table class and extend insert_query and select_id_by_name methods.
+
+    Arguments:
+        db_connexion {<class records.Database>} -- Records Object that provides database connection
+
+    Attributes:
+        name [str] -- Name of the table
+        columns [list] -- All the columns of the table
+
+    """
 
     def __init__(self, db_connexion):
+        """Please see help(Store) for more details."""
         Table.__init__(self, db_connexion)
         self.name = "Substitution"
         self.columns = ["original", "substitute"]
 
     def save_substitution(self, selections):
+        """Save the substitution.
+        
+        Arguments:
+            selections {dict} -- original and substitute products properties.
+        """
+
         t = self.db.transaction()
         query = (f"INSERT INTO {self.name} (original, substitute) VALUES "
                  "((SELECT id FROM Product WHERE name=:name AND brand=:brand LIMIT 1), "
@@ -359,16 +368,4 @@ class Substitution(Table):
 
 
 if __name__ == "__main__":
-    # c = Category(settings.DB_CONNEXION).select_five_main_categories()
-    # print(settings.DB_CONNEXION)
-
-    db_connexion=records.Database(settings.DB_CONNEXION)
-    p=Product(db_connexion)
-
-    s=Substitution(db_connexion)
-    selections={"name": "Maïzena", "brand": 54,
-                  "substitute": "Spécial K", "substitute_brand": 61}
-    test=s.get_all()
-    print(test)
-    # d = Database()
-    # d.create()
+    pass

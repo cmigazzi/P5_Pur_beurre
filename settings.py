@@ -1,6 +1,4 @@
-############
-# SETTINGS #
-############
+"""Set the application."""
 
 # *******************************************************
 #           DATABASE CONNECTION
@@ -17,14 +15,14 @@ DB_CONNEXION = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:3306/{
 # *******************************************************
 #           API REQUEST CONFIG
 # Choose your categories, maximum 5
-CATEGORIES=[
+CATEGORIES = [
     "Céréales et pommes de terre",
     "Fromages",
     "Biscuits et gâteaux",
-#    "Produits à tartiner sucrés",
-    "Petit-déjeuners",
-    "Desserts",
-#    "Conserves"
+    # "Produits à tartiner sucrés",
+    # "Petit-déjeuners",
+    # "Desserts",
+    # "Conserves"
 ]
 
 SEARCH_API_URL = "https://fr.openfoodfacts.org/cgi/search.pl"

@@ -1,14 +1,15 @@
+"""Application launcher."""
+
 import argparse
 import records
 
 from settings import CATEGORIES, DB_CONNEXION
-from get_data import save_data, create_database
 from views import Display
-from models import Category, Product
 from controller import Navigation
 
 
 def parse_arguments():
+    """Set the CLI argument for database installation."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--db_init", action="store_true",
                         help="Initializing and populating database")
@@ -16,6 +17,7 @@ def parse_arguments():
 
 
 def main():
+    """Start function of the app."""
     args = parse_arguments()
 
     if args.db_init is True:
@@ -24,16 +26,12 @@ def main():
         elif len(CATEGORIES) < 1:
             print("Veuillez sélectionner au moins une catégorie dans settings.py")
         else:
-            print("Création de la base de données...")
-            create_database()
-            print("Base de données crée ! Chargement des données d'Open Food Facts...")
-            save_data()
-            print("Installation terminée, vous pouvez utiliser l'application !")
+            setup()
 
     else:
-        db_connexion = records.Database(DB_CONNEXION)
-        Navigation(db_connexion).active()
-        db_connexion.db.close()
+        db_connection = records.Database(DB_CONNEXION)
+        Navigation(db_connection).active()
+        db_connection.db.close()
 
 
 if __name__ == "__main__":
