@@ -183,8 +183,11 @@ class Product(Table):
 
         """
         all_nutri_scores = ['a', 'b', 'c', 'd', 'e']
-        nutri_score_wanted = tuple(
-            n for n in all_nutri_scores if n < selections["nutri_score"])
+        if selections["nutri_score"] == 'b':
+            nutri_score_wanted = "('a')"
+        else:
+            nutri_score_wanted = tuple(
+                n for n in all_nutri_scores if n < selections["nutri_score"])
 
         query = ("SELECT DISTINCT product.name AS name, description, "
                  "b.name AS brand_name, b.id AS brand, "

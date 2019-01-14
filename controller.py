@@ -94,7 +94,7 @@ class Navigation():
             category_selected = self.categories_options[choice-1]
         except IndexError:
             print(
-                "Aucun produit ne correspond à ce numéro,"
+                "Aucun choix ne correspond à ce numéro,"
                 "veuillez sélectionner un numéro valide")
         else:
             category_id = self.category_table.select_id_by_name(
@@ -128,7 +128,7 @@ class Navigation():
             category_selected = self.sub_categories_options[choice-1]
         except IndexError:
             print(
-                "Aucun produit ne correspond à ce numéro,"
+                "Aucun choix ne correspond à ce numéro,"
                 "veuillez sélectionner un numéro valide")
 
         else:
@@ -162,7 +162,7 @@ class Navigation():
             product_selected = self.products_options[choice-1]
         except IndexError:
             print(
-                "Aucun produit ne correspond à ce numéro,"
+                "Aucun choix ne correspond à ce numéro,"
                 "veuillez sélectionner un numéro valide")
         else:
             self.selections["name"] = product_selected[0]
@@ -180,7 +180,8 @@ class Navigation():
                     self.selections)
 
                 if len(better_products) == 0:
-                    print("Aucun aliment ne peut être trouver !")
+                    print("Aucun aliment n'est plus sain "
+                          "dans la même catégorie !")
                 else:
                     self.substitute = random.choice(better_products)
                     self.selections["substitute"] = self.substitute.name
@@ -210,7 +211,7 @@ class Navigation():
                 print("Enregitrement effectué avec succès !")
         elif choice != 2:
             print(
-                "Aucun produit ne correspond à ce numéro,"
+                "Aucun choix ne correspond à ce numéro,"
                 "veuillez sélectionner un numéro valide")
 
         self.selections = {k: None for k in self.selections.keys()}
