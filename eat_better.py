@@ -8,6 +8,7 @@ from views import Display
 from controller import Navigation
 from install import setup
 
+
 def parse_arguments():
     """Set the CLI argument for database installation."""
     parser = argparse.ArgumentParser()
@@ -22,9 +23,11 @@ def main():
 
     if args.db_init is True:
         if len(CATEGORIES) > 5:
-            print("Il y a plus de 5 catégories, veuillez en enlever dans settings.py")
+            print("Il y a plus de 5 catégories, "
+                  "veuillez en enlever dans settings.py")
         elif len(CATEGORIES) < 1:
-            print("Veuillez sélectionner au moins une catégorie dans settings.py")
+            print("Veuillez sélectionner au moins "
+                  "une catégorie dans settings.py")
         else:
             setup()
 

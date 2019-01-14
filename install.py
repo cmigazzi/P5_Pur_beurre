@@ -5,8 +5,8 @@ import records
 from settings import DB_CONNEXION, CATEGORIES
 from get_data import Api, ProductFromApiToDatabase, DataFromApiToDatabase
 from database import (SchemaCreator, CategoryCreator,
-                      StoreCreator, BrandCreator, ProductCreator, SubstitutionCreator)
-
+                      StoreCreator, BrandCreator,
+                      ProductCreator, SubstitutionCreator)
 
 
 def setup():

@@ -17,7 +17,8 @@ class SchemaCreator():
         db = records.Database(
             f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:3306/")
         db.query(
-            f"CREATE SCHEMA IF NOT EXISTS `{self.db_name}` DEFAULT CHARACTER SET utf8mb4;")
+            f"CREATE SCHEMA IF NOT EXISTS `{self.db_name}` "
+            "DEFAULT CHARACTER SET utf8mb4;")
         db.close()
 
 
@@ -49,7 +50,8 @@ class CategoryCreator(TableCreator):
     def __init__(self, db_connection):
         """Set create query as attribute."""
         super().__init__(db_connection)
-        self.query = (f"CREATE TABLE IF NOT EXISTS `{self.db_name}`.`Category` ("
+        self.query = ("CREATE TABLE IF NOT EXISTS "
+                      f"`{self.db_name}`.`Category` ("
                       "`id` SMALLINT NOT NULL AUTO_INCREMENT,"
                       "`name` VARCHAR(100) NOT NULL,"
                       "PRIMARY KEY (`id`))"
@@ -103,7 +105,8 @@ class ProductCreator(TableCreator):
     def __init__(self, db_connection):
         """Set create query as attribute."""
         super().__init__(db_connection)
-        self.query = (f"CREATE TABLE IF NOT EXISTS `{self.db_name}`.`Product` ("
+        self.query = ("CREATE TABLE IF NOT EXISTS "
+                      f"`{self.db_name}`.`Product` ("
                       "`id` INT NOT NULL AUTO_INCREMENT, "
                       "`name` VARCHAR(150) NOT NULL, "
                       "`description` TINYTEXT NULL, "
@@ -117,7 +120,8 @@ class ProductCreator(TableCreator):
                       "PRIMARY KEY (`id`), "
                       "UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE, "
                       "INDEX `fk_category_idx` (`category` ASC) VISIBLE, "
-                      "INDEX `fk_sub_category_idx1` (`sub_category` ASC) VISIBLE, "
+                      "INDEX `fk_sub_category_idx1` "
+                      "(`sub_category` ASC) VISIBLE, "
                       "INDEX `fk_store_0_idx` (`store_0` ASC) VISIBLE, "
                       "INDEX `fk_store_1_idx` (`store_1` ASC) VISIBLE, "
                       "INDEX `fk_brand_idx` (`brand` ASC) VISIBLE, "
@@ -160,7 +164,8 @@ class SubstitutionCreator(TableCreator):
     def __init__(self, db_connection):
         """Set create query as attribute."""
         super().__init__(db_connection)
-        self.query = (f"CREATE TABLE IF NOT EXISTS `{self.db_name}`.`Substitution` ("
+        self.query = ("CREATE TABLE IF NOT EXISTS "
+                      f"`{self.db_name}`.`Substitution` ("
                       "`id` SMALLINT NOT NULL AUTO_INCREMENT, "
                       "`original` INT NOT NULL, "
                       "`substitute` INT NOT NULL, "

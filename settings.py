@@ -10,19 +10,20 @@ DB_HOST = "localhost"
 DB_PORT = "3306"
 DB_NAME = "eat_better"
 
-DB_CONNEXION = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
+DB_CONNEXION = (f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}"
+                f"@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4")
 
 
 # *******************************************************
 #           API REQUEST CONFIG
 # Choose your categories, maximum 5
 CATEGORIES = [
-    "Céréales et pommes de terre",
-    "Fromages",
+    # "Céréales et pommes de terre",
+    # "Fromages",
     "Biscuits et gâteaux",
-    # "Produits à tartiner sucrés",
+    "Produits à tartiner sucrés",
     # "Petit-déjeuners",
-    # "Desserts",
+    "Desserts",
     # "Conserves"
 ]
 

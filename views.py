@@ -10,10 +10,10 @@ class Display():
               "######             EAT BETTER             ########",
               "# L'application pour une alimentation plus saine #",
               "##################################################",
-              "\n",
               sep="\n")
         self.main_menu_options = [
-            "Quel aliment souhaitez-vous remplacer ?", "Retrouver mes aliments substitués.", "Quitter"]
+            "Quel aliment souhaitez-vous remplacer ?",
+            "Retrouver mes aliments substitués.", "Quitter"]
 
     def template_menu(self, menu_tree, options=None):
         """Display list.
@@ -31,18 +31,21 @@ class Display():
 
         if menu_tree == 0:
             # main menu
-            print("Faites votre choix à l'aide des numéros")
+            print("\nFaites votre choix à l'aide des numéros")
         elif menu_tree == 1:
             # select category
-            print("\nSélectionner la catégorie (taper 0 pour revenir au menu principal):")
+            print("\nSélectionner la catégorie "
+                  "(taper 0 pour revenir au menu principal):")
         elif menu_tree == 2:
             # select sub category
             print(
-                "\nSélectionner la sous-catégorie (taper 0 pour revenir à la liste des catégories):")
+                "\nSélectionner la sous-catégorie "
+                "(taper 0 pour revenir à la liste des catégories):")
         elif menu_tree == 3:
             # select product
             print(
-                "\nSélectionner l'aliment (taper 0 pour revenir à la liste des sous-catégories):")
+                "\nSélectionner l'aliment "
+                "(taper 0 pour revenir à la liste des sous-catégories):")
 
         for (number, option) in enumerate(self.options):
             if isinstance(option, tuple):
@@ -60,10 +63,13 @@ class Display():
             substitute {list} -- substitute product property
 
         """
-        print(f"\nNous vous proposons de remplacer le produit {selections['name']} de la marque {selections['brand_name']} par: \n",
-              f"{ substitute.name } de la marque { substitute.brand_name}. \n",
+        print(f"\nNous vous proposons de remplacer le produit:\n",
+              f"{selections['name']} de la marque {selections['brand_name']}",
+              "par:",
+              f"{ substitute.name } de la marque { substitute.brand_name}.\n",
               f"Description: {substitute.description}",
-              f"Vous pourrez le trouver chez {substitute.store_0} ou {substitute.store_1}.\n",
+              f"Vous pourrez le trouver chez {substitute.store_0} "
+              f"ou {substitute.store_1}.\n",
               "Pour plus d'informations sur le produit, cliquez ici:",
               f"{substitute.url}\n",
               "Souhaitez-vous enregistrer cette substitution de produit ?",
@@ -78,9 +84,11 @@ class Display():
             substitutions {list} -- substitutions
         """
         for products in substitutions:
-            print(f"Le produit {products.original} de la marque {products.original_brand}",
+            print(f"\nLe produit {products.original} "
+                  f"de la marque {products.original_brand}",
                   "a été substitué par: ",
-                  f"{products.substitute} de la marque {products.substitute_brand}",
+                  f"{products.substitute} "
+                  f"de la marque {products.substitute_brand}",
                   f"Pour plus de détails: {products.url}",
                   sep="\n")
 
@@ -92,6 +100,7 @@ class Display():
             try:
                 choice = int(input("Saisissez un numéro: \n"))
             except ValueError:
-                print("Pour faire votre choix, veuillez saisir un nombre valide")
+                print("Pour faire votre choix, "
+                      "veuillez saisir un nombre valide")
                 continue
             return choice

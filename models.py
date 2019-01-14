@@ -11,13 +11,13 @@ class Table():
     """Represent a generic Table.
 
     Arguments:
-        db_connexion {<class records.Database>} -- Records Object that provides database connection
+        db_connection {<class records.Database>} -- database connection
 
     """
 
-    def __init__(self, db_connexion):
+    def __init__(self, db_connection):
         """Please see help(Table) for more details."""
-        self.db = db_connexion
+        self.db = db_connection
 
     def insert_query(self, data):
         """Insert query for inserting data in single column.
@@ -30,7 +30,8 @@ class Table():
         for unique_data in data:
 
             self.db.query(
-                f"INSERT INTO {self.name} ({self.columns}) VALUES (:unique_data);",
+                f"INSERT INTO {self.name} ({self.columns}) "
+                "VALUES (:unique_data);",
                 unique_data=unique_data)
         t.commit()
 
@@ -57,7 +58,7 @@ class Product(Table):
     Inherit from Table class.
 
     Arguments:
-        db_connexion {<class records.Database>} -- Records Object that provides database connection
+        db_connection {<class records.Database>} -- database connection
 
     Attributes:
         name [str] -- Name of the table
@@ -65,12 +66,13 @@ class Product(Table):
 
     """
 
-    def __init__(self, db_connexion):
+    def __init__(self, db_connection):
         """Please see help(Product) for more details."""
-        Table.__init__(self, db_connexion)
+        super().__init__(db_connection)
         self.name = "Product"
         self.columns = ["name", "description", "url", "nutri_score",
-                        "category", "sub_category", "store_0", "store_1", "brand"]
+                        "category", "sub_category",
+                        "store_0", "store_1", "brand"]
 
     def insert_query(self, products):
         """Insert product in Product table.
@@ -94,25 +96,30 @@ class Product(Table):
             product["brand"] = Brand(self.db).select_id_by_name(
                 product["brand"])
 
-            product["category"] = Category(self.db).select_id_by_name(product["category"])
+            product["category"] = \
+                Category(self.db).select_id_by_name(product["category"])
 
             if product["sub_category"] is not None:
-                product["sub_category"] = Category(self.db).select_id_by_name(product["sub_category"])
+                product["sub_category"] = \
+                    Category(self.db).select_id_by_name(product["sub_category"])
 
-            product["store_0"] = Store(self.db).select_id_by_name(product["store_0"])
+            product["store_0"] = \
+                Store(self.db).select_id_by_name(product["store_0"])
 
             try:
                 product["store_1"]
             except KeyError:
                 pass
             else:
-                product["store_1"] = Store(self.db).select_id_by_name(product["store_1"])
+                product["store_1"] = \
+                    Store(self.db).select_id_by_name(product["store_1"])
 
             columns = ", ".join(product.keys())
             values = ", ".join([":"+str(i) for i in product.keys()])
 
             self.db.query(
-                f"INSERT INTO {self.name} ({columns}) VALUES ({values});", **product)
+                (f"INSERT INTO {self.name} ({columns}) "
+                 f"VALUES ({values});"), **product)
 
         t.commit()
         self.db.close()
@@ -121,13 +128,15 @@ class Product(Table):
         """Select products in a single categoy.
 
         Arguments:
-            selections {dict} -- Selections of the user with keys 'category' and 'sub_category'
+            selections {dict} --
+                Selections of the user with keys 'category' and 'sub_category'
 
         Returns:
             [list] -- dictionnaires of the row results
 
         """
-        query = (f"SELECT DISTINCT {self.name}.`name` AS `name`, b.`name` AS brand "
+        query = ("SELECT DISTINCT "
+                 f"{self.name}.`name` AS `name`, b.`name` AS brand "
                  f"FROM {DB_NAME}.{self.name} "
                  f"INNER JOIN {DB_NAME}.category AS c "
                  f"ON {self.name}.sub_category = c.id "
@@ -137,7 +146,7 @@ class Product(Table):
                  f"AND {self.name}.sub_category = {selections['sub_category']} "
                  "AND c.`name` NOT LIKE 'en:%' OR 'fr:%';"
                  )
-        print(query)
+        # print(query)
         rows = self.db.query(query)
 
         results = [(r.name, r.brand) for r in rows]
@@ -148,7 +157,8 @@ class Product(Table):
         """Select nutri_score of a product.
 
         Arguments:
-            selections {dict} -- Selections of the user with keys 'name' and 'brand'.
+            selections {dict} --
+                Selections of the user with keys 'name' and 'brand'.
 
         Returns:
             str -- the nutri_score of the product.
@@ -177,7 +187,8 @@ class Product(Table):
             n for n in all_nutri_scores if n < selections["nutri_score"])
 
         query = ("SELECT DISTINCT product.name AS name, description, "
-                 "b.name AS brand_name, b.id AS brand, s0.name AS store_0, s1.name AS store_1, url "
+                 "b.name AS brand_name, b.id AS brand, "
+                 "s0.name AS store_0, s1.name AS store_1, url "
                  f"FROM {DB_NAME}.product "
                  f"INNER JOIN {DB_NAME}.brand AS b "
                  "ON product.brand = b.id "
@@ -198,10 +209,11 @@ class Product(Table):
 class Category(Table):
     """Represent the Category table.
 
-    Inherit from Table class and extend insert_query and select_id_by_name methods.
+    Inherit from Table class
+    and extend insert_query and select_id_by_name methods.
 
     Arguments:
-        db_connexion {<class records.Database>} -- Records Object that provides database connection
+        db_connection {<class records.Database>} -- database connection
 
     Attributes:
         name [str] -- Name of the table
@@ -209,9 +221,9 @@ class Category(Table):
 
     """
 
-    def __init__(self, db_connexion):
+    def __init__(self, db_connection):
         """Please see help(Category) for more details."""
-        Table.__init__(self, db_connexion)
+        super().__init__(db_connection)
         self.name = "Category"
         self.columns = "name"
 
@@ -268,10 +280,11 @@ class Category(Table):
 class Brand(Table):
     """Represent the Brand table.
 
-    Inherit from Table class and extend insert_query and select_id_by_name methods.
+    Inherit from Table class
+    and extend insert_query and select_id_by_name methods.
 
     Arguments:
-        db_connexion {<class records.Database>} -- Records Object that provides database connection
+        db_connection {<class records.Database>} -- database connection
 
     Attributes:
         name [str] -- Name of the table
@@ -279,9 +292,9 @@ class Brand(Table):
 
     """
 
-    def __init__(self, db_connexion):
+    def __init__(self, db_connection):
         """Please see help(Brand) for more details."""
-        Table.__init__(self, db_connexion)
+        super().__init__(db_connection)
         self.name = "Brand"
         self.columns = "name"
 
@@ -289,10 +302,11 @@ class Brand(Table):
 class Store(Table):
     """Represent the Store table.
 
-    Inherit from Table class and extend insert_query and select_id_by_name methods.
+    Inherit from Table class
+    and extend insert_query and select_id_by_name methods.
 
     Arguments:
-        db_connexion {<class records.Database>} -- Records Object that provides database connection
+        db_connection {<class records.Database>} -- database connection
 
     Attributes:
         name [str] -- Name of the table
@@ -300,9 +314,9 @@ class Store(Table):
 
     """
 
-    def __init__(self, db_connexion):
+    def __init__(self, db_connection):
         """Please see help(Store) for more details."""
-        Table.__init__(self, db_connexion)
+        super().__init__(db_connection)
         self.name = "Store"
         self.columns = "name"
 
@@ -310,10 +324,11 @@ class Store(Table):
 class Substitution(Table):
     """Represent the Substitution table.
 
-    Inherit from Table class and extend insert_query and select_id_by_name methods.
+    Inherit from Table class
+    and extend insert_query and select_id_by_name methods.
 
     Arguments:
-        db_connexion {<class records.Database>} -- Records Object that provides database connection
+        db_connection {<class records.Database>} -- database connection
 
     Attributes:
         name [str] -- Name of the table
@@ -321,14 +336,16 @@ class Substitution(Table):
 
     """
 
-    def __init__(self, db_connexion):
+    def __init__(self, db_connection):
         """Please see help(Store) for more details."""
-        Table.__init__(self, db_connexion)
+        super().__init__(db_connection)
         self.name = "Substitution"
         self.columns = ["original", "substitute"]
 
-    def save_substitution(self, selections):
+    def insert_query(self, selections):
         """Save the substitution.
+
+        Override Table method.
 
         Arguments:
             selections {dict} -- original and substitute products properties.
@@ -336,16 +353,19 @@ class Substitution(Table):
 
         t = self.db.transaction()
         query = (f"INSERT INTO {self.name} (original, substitute) VALUES "
-                 "((SELECT id FROM Product WHERE name=:name AND brand=:brand LIMIT 1), "
-                 "(SELECT id FROM Product WHERE name=:substitute AND brand=:substitute_brand LIMIT 1));")
+                 "((SELECT id FROM Product WHERE name=:name "
+                 "AND brand=:brand LIMIT 1), "
+                 "(SELECT id FROM Product WHERE name=:substitute "
+                 "AND brand=:substitute_brand LIMIT 1));")
 
         self.db.query(query, **selections)
         t.commit()
 
     def get_all(self):
 
-        query = ("SELECT o.name AS original, ob.name AS original_brand, s.name AS substitute, "
-                 "sb.name AS substitute_brand, s.url AS url "
+        query = ("SELECT o.name AS original, ob.name AS original_brand, "
+                 "s.name AS substitute, sb.name AS substitute_brand, "
+                 "s.url AS url "
                  f"FROM {DB_NAME}.substitution "
                  f"INNER JOIN {DB_NAME}.product AS o "
                  "ON substitution.original = o.id "

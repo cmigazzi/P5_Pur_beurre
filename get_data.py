@@ -22,14 +22,18 @@ class Api():
         clean_products = []
 
         for category in CATEGORIES:
+            print(f"Chargement des produits de type {category}")
             api_url = SEARCH_API_URL + \
-                f"?search_terms={category}&search_tag=category&sort_by=unique_scans_n&page_size=1000&json=1"
+                (f"?search_terms={category}"
+                 "&search_tag=category&sort_by=unique_scans_n"
+                 "&page_size=1000&json=1")
             json_response = requests.get(api_url).json()
             products = json_response["products"]
 
             for product in products:
                 clean_product = {
-                    k: v for k, v in product.items() if k in FIELD_NEEDED and v != ''}
+                    k: v for k, v in product.items()
+                    if k in FIELD_NEEDED and v != ''}
                 clean_products.append(clean_product)
 
         return clean_products
@@ -94,7 +98,7 @@ class ProductFromApiToDatabase():
     Arguments:
         product {list} -- dictionnaries of products property
         category {str} -- main category of the product
-        db_connection {<class records.Database>} -- Records Object that provides database connection
+        db_connection {<class records.Database>} -- database connection
 
     """
 
@@ -118,7 +122,8 @@ class ProductFromApiToDatabase():
         """Transform a string of elements separated by commas into a list.
 
         Arguments:
-            elmt_with_commas {string with commas} -- elements separated by commas
+            elmt_with_commas {string with commas} --
+                                elements separated by commas
 
         Returns:
             [list] -- elements in a list
@@ -171,7 +176,8 @@ class ProductFromApiToDatabase():
     def clean(self):
         """Clean and format product property to be saved."""
         # clean categories
-        filter_categories = self.categories[self.category_index: self.category_index+2]
+        filter_categories = \
+            self.categories[self.category_index: self.category_index+2]
         self.categories = [
             category for category in filter_categories if category != '']
         del self.fields["categories"]

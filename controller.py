@@ -15,10 +15,13 @@ class Navigation():
     Attributes:
         db {<class records.Database>} -- database connection
         view {<class views.Display>} -- manage the user interface
-        category_table {<class models.Category>} -- manage queries on category table
+        category_table {<class models.Category>} --
+                                    manage queries on category table
         brand_table {<class models.Brand>} -- manage queries on brand table
-        product_table {<class models.Product>} -- manage queries on product table
-        substitution_table {<class models.Substitution>} -- manage queries on substitution table
+        product_table {<class models.Product>} --
+                                    manage queries on product table
+        substitution_table {<class models.Substitution>} --
+                                    manage queries on substitution table
         current_pos {int} -- track where the user is in the navigation tree
         selections {dict} -- keep all the choices of the user
         active {func} -- active method
@@ -63,7 +66,8 @@ class Navigation():
             self.active = self.all_substitutions
 
         elif choice == 1:
-            self.categories_options = self.category_table.select_five_main_categories()
+            self.categories_options = \
+                self.category_table.select_five_main_categories()
             self.active = self.categories
 
         else:
@@ -90,14 +94,16 @@ class Navigation():
             category_selected = self.categories_options[choice-1]
         except IndexError:
             print(
-                "Aucun produit ne correspond à ce numéro, veuillez sélectionner un numéro valide")
+                "Aucun produit ne correspond à ce numéro,"
+                "veuillez sélectionner un numéro valide")
         else:
             category_id = self.category_table.select_id_by_name(
                 category_selected)
 
             self.selections["category"] = category_id
-            self.sub_categories_options = self.category_table.select_sub_categories(
-                self.selections)
+            self.sub_categories_options = \
+                self.category_table.select_sub_categories(
+                    self.selections)
 
             self.active = self.sub_categories
 
@@ -122,15 +128,17 @@ class Navigation():
             category_selected = self.sub_categories_options[choice-1]
         except IndexError:
             print(
-                "Aucun produit ne correspond à ce numéro, veuillez sélectionner un numéro valide")
+                "Aucun produit ne correspond à ce numéro,"
+                "veuillez sélectionner un numéro valide")
 
         else:
             sub_category_id = self.category_table.select_id_by_name(
                 category_selected)
 
             self.selections["sub_category"] = sub_category_id
-            self.products_options = self.product_table.select_product_list_by_category(
-                self.selections)
+            self.products_options = \
+                self.product_table.select_product_list_by_category(
+                    self.selections)
             self.active = self.products
 
         return self.active()
@@ -154,15 +162,16 @@ class Navigation():
             product_selected = self.products_options[choice-1]
         except IndexError:
             print(
-                "Aucun produit ne correspond à ce numéro, veuillez sélectionner un numéro valide")
+                "Aucun produit ne correspond à ce numéro,"
+                "veuillez sélectionner un numéro valide")
         else:
             self.selections["name"] = product_selected[0]
             self.selections["brand_name"] = product_selected[1]
             self.selections["brand"] = self.brand_table.select_id_by_name(
                 product_selected[1])
-            print(self.selections)
-            self.selections["nutri_score"] = self.product_table.get_nutri_score_by_name(
-                self.selections)
+            self.selections["nutri_score"] = \
+                self.product_table.get_nutri_score_by_name(
+                    self.selections)
 
             if self.selections["nutri_score"] == 'a':
                 print("Cet aliment est déjà sain, c'est super ! Bon appétit")
@@ -193,7 +202,7 @@ class Navigation():
 
         if choice == 1:
             try:
-                self.substitution_table.save_substitution(self.selections)
+                self.substitution_table.insert_query(self.selections)
             except Exception as e:
                 print("Erreur dans l'enregistrement")
                 # print(e)
@@ -201,7 +210,8 @@ class Navigation():
                 print("Enregitrement effectué avec succès !")
         elif choice != 2:
             print(
-                "Aucun produit ne correspond à ce numéro, veuillez sélectionner un numéro valide")
+                "Aucun produit ne correspond à ce numéro,"
+                "veuillez sélectionner un numéro valide")
 
         self.selections = {k: None for k in self.selections.keys()}
         self.active = self.main
