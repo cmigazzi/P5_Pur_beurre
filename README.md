@@ -4,7 +4,7 @@
 
 Before using the applictaion, you need to clone this repository, create and activate a virtual environnement, install database schema and get data from Open Food Facts API.
 
-To do that, make sure that Python3, venv, git and MySql are installed and follow theses steps in your prompt placed on the target folder:
+To do that, make sure that **Python 3.6**, venv, git and MySql are installed and follow theses steps in your prompt placed on the target folder:
 
 - clone the repo: `git clone https://github.com/cmigazzi/P5_Pur_beurre.git`
 
@@ -20,7 +20,9 @@ To do that, make sure that Python3, venv, git and MySql are installed and follow
 
 - If not exist, create a new mysql user with creation privileges
 
-- Go to settings.py to enter your mysql username, password, host, port and db_name at lines 7-11
+- Open settings.py in a text editor (or IDE):
+    - Enter your mysql username, password, host, port and db_name at lines 7 to 11.
+    - You can also choose which categories you want to get (maximum 5) at lines 21 to 27.
 
 - install database schema and get datas: `python eat_better.py --db_init`
 This may takes few minutes, so let's take a coffee

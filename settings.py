@@ -17,12 +17,13 @@ DB_CONNEXION = (f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}"
 # *******************************************************
 #           API REQUEST CONFIG
 # Choose your categories, maximum 5
+# Uncomment categories to get them
 CATEGORIES = [
     # "Céréales et pommes de terre",
-    # "Fromages",
+    "Fromages",
     "Biscuits et gâteaux",
     "Produits à tartiner sucrés",
-    # "Petit-déjeuners",
+    "Petit-déjeuners",
     "Desserts",
     # "Conserves"
 ]
